@@ -28,3 +28,6 @@ throw_molotov={"deadzone":0.2,"events":[Object(InputEventKey,"physical_keycode":
 fire_shotgun={"deadzone":0.2,"events":[Object(InputEventKey,"physical_keycode":70)]}
 reload={"deadzone":0.2,"events":[Object(InputEventKey,"physical_keycode":82)]}
 toggle_flashlight={"deadzone":0.2,"events":[Object(InputEventKey,"physical_keycode":76)]}
+interact={"deadzone":0.2,"events":[Object(InputEventKey,"physical_keycode":69)]}
+use_first_aid={"deadzone":0.2,"events":[Object(InputEventKey,"physical_keycode":72)]}
+toggle_inventory={"deadzone":0.2,"events":[Object(InputEventKey,"physical_keycode":73)]}

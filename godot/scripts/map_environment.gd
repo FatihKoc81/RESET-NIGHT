@@ -1,4 +1,6 @@
 extends Node3D
+
+const LOOT_SCENE := preload("res://scenes/interactables/LootContainer3D.tscn")
 ## RESET NIGHT procedural 3D street kit. Primitive meshes are placeholders for final art assets.
 
 var asphalt: StandardMaterial3D
@@ -14,6 +16,7 @@ func _ready() -> void:
     _build_ground()
     _build_street_props()
     _build_walls_and_fences()
+    _build_loot_containers()
 
 func _make_materials() -> void:
     asphalt = _mat(Color(0.055, 0.063, 0.073), 0.95)
@@ -212,3 +215,14 @@ func _abandoned_house(pos: Vector3) -> void:
     _add_box_mesh(root, Vector3(5.12, 2.0, -1.2), Vector3(0.12, 0.18, 2.0), metal, true)
     # Flat damaged roof slab.
     _add_box_mesh(root, Vector3(0, 3.35, 0), Vector3(11.4, 0.28, 8.4), concrete, true)
+
+func _build_loot_containers() -> void:
+    _spawn_loot(Vector3(-3.5, 0.0, -3.5), "Terk edilmiş sandık")
+    _spawn_loot(Vector3(14.0, 0.0, 2.0), "Araç bagajı")
+    _spawn_loot(Vector3(-17.0, 0.0, 10.0), "Malzeme dolabı")
+
+func _spawn_loot(pos: Vector3, label: String) -> void:
+    var container := LOOT_SCENE.instantiate()
+    container.position = pos
+    container.container_label = label
+    $NavigationRegion3D/EnvironmentProps3D.add_child(container)

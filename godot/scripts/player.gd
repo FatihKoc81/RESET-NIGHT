@@ -5,6 +5,7 @@ const BAT_COOLDOWN := 1.2
 const BAT_RANGE := 2.4
 const STUN_CHANCE := 0.15
 const MOLOTOV_SCENE := preload("res://scenes/weapons/Molotov.tscn")
+const FIRST_AID_HEAL := 45.0
 
 @export var move_speed := 5.2
 @export var max_health := 100.0
@@ -19,6 +20,7 @@ var invulnerable := 0.0
 var yaw := 0.0
 var hud: Node
 var flashlight_on := true
+var nearby_loot: Node3D
 
 @onready var camera: Camera3D = $CameraPivot/SpringArm3D/Camera3D
 @onready var flashlight: SpotLight3D = $CameraPivot/Flashlight
@@ -76,6 +78,50 @@ func _physics_process(delta: float) -> void:
         reload_shotgun()
     if Input.is_action_just_pressed("toggle_flashlight"):
         toggle_flashlight()
+    if Input.is_action_just_pressed("interact"):
+        interact()
+    if Input.is_action_just_pressed("use_first_aid"):
+        use_first_aid()
+
+func interact() -> void:
+    var nearest: Node3D
+    var nearest_distance := 2.8
+    for container in get_tree().get_nodes_in_group("loot_containers"):
+        if not is_instance_valid(container):
+            continue
+        var distance := global_position.distance_to(container.global_position)
+        if distance < nearest_distance:
+            nearest = container
+            nearest_distance = distance
+    if nearest:
+        if nearest.searched:
+            _notify("Bu sandık zaten arandı")
+        elif nearest.searching:
+            _notify("Sandık aranıyor...")
+        else:
+            nearest.begin_search()
+            _notify("Sandık aranıyor... 2 saniye")
+    else:
+        _notify("Yakında aranabilir sandık yok")
+
+func use_first_aid() -> void:
+    if health >= max_health:
+        _notify("Sağlığın zaten dolu")
+        return
+    var bag := $InventoryManager
+    if bag.consume("first_aid"):
+        health = minf(max_health, health + FIRST_AID_HEAL)
+        if is_instance_valid(hud):
+            hud.set_health(health, max_health)
+        _notify("İlk yardım kullanıldı: +45 sağlık")
+    else:
+        _notify("İlk yardım kitin yok")
+
+func craft_item(recipe_id: String) -> void:
+    if $InventoryManager.craft(recipe_id):
+        _notify("Üretildi: " + str($InventoryManager.RECIPES[recipe_id].name))
+    else:
+        _notify("Malzeme yetersiz veya çanta dolu")
 
 func toggle_flashlight() -> void:
     flashlight.toggle()
@@ -98,6 +144,7 @@ func throw_molotov() -> void:
         _notify("Molotof kalmadı")
         return
     molotov_count -= 1
+    $InventoryManager.consume("molotov") if int($InventoryManager.inventory.get("molotov", 0)) > 0 else null
     var bottle := MOLOTOV_SCENE.instantiate()
     get_tree().current_scene.add_child(bottle)
     bottle.global_position = global_position + Vector3(0, 1.1, 0) - global_transform.basis.z * 0.8

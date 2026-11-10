@@ -7,6 +7,9 @@ var ammo_label: Label
 var joystick_origin := Vector2.ZERO
 var joystick_touch := -1
 var joystick_vector := Vector2.ZERO
+var inventory_panel: PanelContainer
+var inventory_label: Label
+var inventory_button: Button
 
 func _ready() -> void:
     add_to_group("hud")
@@ -26,7 +29,51 @@ func _ready() -> void:
     _make_action(root, "POMPALI", Vector2(-250, -65), "fire_shotgun")
     _make_action(root, "DOLDUR", Vector2(-155, -65), "reload_shotgun")
     _make_action(root, "FENER", Vector2(-60, -65), "toggle_flashlight")
+    _make_action(root, "ARA (E)", Vector2(-250, -225), "interact")
+    _make_action(root, "İLK YARDIM", Vector2(-155, -225), "use_first_aid")
+    _build_inventory_panel(root)
     root.gui_input.connect(_on_root_input)
+
+func _build_inventory_panel(root: Control) -> void:
+    inventory_button = Button.new()
+    inventory_button.text = "ÇANTA (I)"
+    inventory_button.position = Vector2(22, 105)
+    inventory_button.size = Vector2(118, 48)
+    inventory_button.pressed.connect(_toggle_inventory)
+    root.add_child(inventory_button)
+    inventory_panel = PanelContainer.new()
+    inventory_panel.position = Vector2(22, 160)
+    inventory_panel.size = Vector2(300, 300)
+    inventory_panel.visible = false
+    root.add_child(inventory_panel)
+    var column := VBoxContainer.new()
+    inventory_panel.add_child(column)
+    inventory_label = _label(column, "ÇANTA", Vector2.ZERO, Vector2(280, 170), 16)
+    _craft_button(column, "Molotof üret (Kumaş 1 + Alkol 1)", "molotov")
+    _craft_button(column, "İlk yardım üret (Kumaş 2 + Alkol 1)", "first_aid")
+    _craft_button(column, "Dikenli sopa takviyesi (Hurda 2 + Tel 2)", "spiked_bat_upgrade")
+
+func _craft_button(parent: Control, title: String, recipe_id: String) -> void:
+    var button := Button.new()
+    button.text = title
+    button.pressed.connect(_craft.bind(recipe_id))
+    parent.add_child(button)
+
+func _craft(recipe_id: String) -> void:
+    if is_instance_valid(player) and player.has_method("craft_item"):
+        player.craft_item(recipe_id)
+    _refresh_inventory()
+
+func _toggle_inventory() -> void:
+    inventory_panel.visible = not inventory_panel.visible
+    _refresh_inventory()
+
+func _refresh_inventory() -> void:
+    if not is_instance_valid(inventory_label) or not is_instance_valid(player):
+        return
+    var bag := player.get_node_or_null("InventoryManager")
+    if is_instance_valid(bag):
+        inventory_label.text = bag.get_inventory_text()
 
 func _label(parent: Control, text_value: String, pos: Vector2, size: Vector2, font_size: int) -> Label:
     var label := Label.new()
@@ -97,6 +144,9 @@ func show_message(value: String) -> void:
             message_label.text = "RESET NIGHT"
 
 func _process(_delta: float) -> void:
+    if Input.is_action_just_pressed("toggle_inventory") and is_instance_valid(inventory_panel):
+        _toggle_inventory()
+    _refresh_inventory()
     if not is_instance_valid(player):
         player = get_tree().get_first_node_in_group("player")
     if is_instance_valid(player) and is_instance_valid(ammo_label):

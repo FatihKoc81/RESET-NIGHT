@@ -32,3 +32,13 @@ Bu klasör, mevcut Android/Capacitor sürümünden ayrı tutulan Godot 4 tabanl�
 
 ## Teknik not
 Harita nesneleri bu prototipte Godot primitive mesh ve malzemeleriyle üretilen oynanabilir placeholder varlıklardır; listelenen PNG sanat dosyaları henüz çizilmiş gerçek texture dosyaları değildir. Godot Android APK export işlemi ayrıca yapılandırılmalı ve cihazda test edilmelidir.
+
+
+## Envanter, yağma ve üretim
+- Oyuncu altında `InventoryManager` kaynak envanterini ve tarifleri yönetir.
+- Tahta, hurda metal, dikenli tel, kumaş ve alkol kaynakları sandıklardan rastgele çıkar.
+- Haritada üç aranabilir 3D ganimet noktası bulunur. Yaklaşınca E / ARA düğmesiyle 2 saniye arama yapılır; sandık tek kullanımlıktır.
+- I / ÇANTA envanteri açar. Menüden molotof, ilk yardım kiti ve dikenli sopa takviyesi üretilebilir.
+- H / İLK YARDIM, ilk yardım kiti tüketerek 45 sağlık yeniler.
+- Eşya yığın limitleri item verisinde tanımlıdır; envanter doluysa fazla ganimet alınmaz.
+- Android HUD üzerinde ARA, ÇANTA ve ilk yardım düğmeleri bulunur.
