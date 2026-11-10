@@ -16,7 +16,7 @@ func _input(event: InputEvent) -> void:
     var screen_size := get_viewport_rect().size
     if event is InputEventScreenTouch:
         if event.pressed:
-            if event.position.x < screen_size.x * 0.48 and event.position.y > screen_size.y * 0.70 and _touch_index == -1:
+            if _is_joystick_start_area(event.position, screen_size) and _touch_index == -1:
                 _touch_index = event.index
                 _origin = event.position
                 _update_move(event.position)
@@ -27,4 +27,10 @@ func _input(event: InputEvent) -> void:
         _update_move(event.position)
 
 func _update_move(position: Vector2) -> void:
-    _input_manager.move_vector = ((position - _origin) / 76.0).limit_length(1.0)
+    var screen_size := get_viewport_rect().size
+    var joystick_radius := clampf(minf(screen_size.x, screen_size.y) * 0.11, 56.0, 110.0)
+    _input_manager.move_vector = ((position - _origin) / joystick_radius).limit_length(1.0)
+
+func _is_joystick_start_area(position: Vector2, screen_size: Vector2) -> bool:
+    # Reserve the lower-left area for movement; leave the right side to HUD actions.
+    return position.x < screen_size.x * 0.45 and position.y > screen_size.y * 0.45
