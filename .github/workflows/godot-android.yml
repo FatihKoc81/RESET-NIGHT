@@ -24,13 +24,13 @@ jobs:
         shell: bash
         run: |
           apt-get update
-          apt-get install -y openjdk-17-jdk curl unzip android-sdk-platform-tools android-sdk-build-tools android-sdk-platform-33
+          apt-get install -y openjdk-17-jdk curl unzip
           export JAVA_HOME="$(dirname "$(dirname "$(readlink -f "$(command -v java)")")")"
           echo "JAVA_HOME=$JAVA_HOME" >> "$GITHUB_ENV"
           echo "ANDROID_HOME=${ANDROID_HOME:-/opt/android-sdk}" >> "$GITHUB_ENV"
           echo "ANDROID_SDK_ROOT=${ANDROID_HOME:-/opt/android-sdk}" >> "$GITHUB_ENV"
           ls -la "${ANDROID_HOME:-/opt/android-sdk}"
-          find "${ANDROID_HOME:-/opt/android-sdk}" -maxdepth 5 -type f \\( -name sdkmanager -o -name apksigner \\) -print
+          find "${ANDROID_HOME:-/opt/android-sdk}" -maxdepth 5 -type f -name apksigner -print || true
 
       - name: Restore stable Godot debug signing key
         uses: actions/cache@v4
