@@ -19,9 +19,11 @@ func _ready() -> void:
     var root := Control.new()
     root.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
     root.mouse_filter = Control.MOUSE_FILTER_PASS
+    var ui_builder = preload("res://scripts/ui_asset_builder.gd").new()
+    root.theme = ui_builder.setup_theme()
     add_child(root)
     health_label = _label(root, "SAĞLIK 100", Vector2(22, 18), Vector2(220, 54), 22)
-    ammo_label = _label(root, "POMPALI 2 / 20  •  MOLOTOF 3", Vector2(22, 54), Vector2(360, 42), 15)
+    ammo_label = _label(root, "POMPALI 2 / 20  •  MOLOTOF 3", Vector2(22, 96), Vector2(360, 34), 15)
     message_label = _label(root, "RESET NIGHT", Vector2(0, 18), Vector2(600, 48), 20)
     message_label.anchor_left = 0.5
     message_label.anchor_right = 0.5
