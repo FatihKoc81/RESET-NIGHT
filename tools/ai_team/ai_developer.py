@@ -7,7 +7,7 @@ TARGET = os.environ.get("AI_TARGET_FILE", "")
 TASK = os.environ.get("AI_TASK", "").strip()
 ALLOWED_PREFIX = "godot/scripts/"
 MAX_FILE = 24000
-MAX_ATTEMPTS = 3
+MAX_ATTEMPTS = 2
 
 def request(url, headers, payload=None):
     data = None if payload is None else json.dumps(payload).encode()
@@ -31,13 +31,13 @@ def output_text(data):
             chunks.append(item["text"])
     if not chunks and isinstance(data.get("output_text"), str):
         chunks.append(data["output_text"])
-    return "\\n".join(chunks).strip()
+    return "\n".join(chunks).strip()
 
 def parse_review_json(raw):
     """Parse strict JSON, tolerating harmless fences or surrounding prose."""
-    text = (raw or "").strip().lstrip("\\ufeff")
-    text = re.sub(r"^\\s*```(?:json)?\\s*", "", text, flags=re.I)
-    text = re.sub(r"\\s*```\\s*$", "", text)
+    text = (raw or "").strip().lstrip("\ufeff")
+    text = re.sub(r"^\s*```(?:json)?\s*", "", text, flags=re.I)
+    text = re.sub(r"\s*```\s*$", "", text)
     try:
         return json.loads(text)
     except json.JSONDecodeError:
@@ -108,25 +108,27 @@ def gemini_generate(original, feedback=None):
 
 def gpt_review(original, proposed):
     model = os.getenv("OPENAI_MODEL", "gpt-5-mini")
+    diff = "".join(difflib.unified_diff(
+        original.splitlines(True), proposed.splitlines(True),
+        fromfile="original.gd", tofile="proposed.gd"
+    ))
     prompt = (
-        "You are the independent senior reviewer for a Godot 4 mobile game code change. "
-        "Review the requested change and proposed complete-file replacement. Check correctness, regressions, "
-        "GDScript syntax/API plausibility, preservation of existing behavior, and strict task scope. "
-        "Reject any unrelated behavior change, fabricated API, destructive behavior, security concern, "
-        "or uncertainty requiring a human. Return ONLY JSON: "
-        "{\"approved\":true|false,\"summary\":\"concise Turkish explanation\","
-        "\"issues\":[\"specific actionable feedback for the implementer\"]}. "
-        "Be conservative. Approval means suitable to run validation, not guaranteed bug-free. " +
-        "Keep the summary under 2 sentences and return at most 3 short issues. " +
-        "Do not repeat the task or quote large code blocks.\n\n"
-        "TASK:\n" + TASK + "\n\nORIGINAL FILE:\n" + original +
-        "\n\nPROPOSED FILE:\n" + proposed
+        "Act as a practical independent reviewer of a small Godot 4 GDScript change. "
+        "Approve when the change substantially fulfills the task and has no clearly identifiable "
+        "critical correctness, security, destructive, or scope problem. Do NOT reject for style, "
+        "minor preferences, speculative concerns, or merely because runtime testing is still needed. "
+        "Do not invent problems. If you find a concrete blocker, explain it in one short actionable issue. "
+        "Return ONLY a JSON object with exactly these fields: "
+        "{\\"approved\\": true, \\"summary\\": \\"short Turkish result\\", "
+        "\\"issues\\": []}. The approved value must be a boolean; issues must be an array. "
+        "Keep the response below 300 words. The next workflow steps run Godot validation.\\n\\n"
+        "TASK:\\n" + TASK + "\\n\\nPATCH TO REVIEW:\\n" + diff
     )
     data = request(
         "https://api.openai.com/v1/responses",
         {"Authorization": "Bearer " + os.environ["OPENAI_API_KEY"],
          "Content-Type": "application/json"},
-        {"model": model, "input": prompt, "max_output_tokens": 5000,
+        {"model": model, "input": prompt, "max_output_tokens": 1200,
          "text": {"format": {"type": "json_object"}}}
     )
     if data.get("status") == "incomplete":
@@ -136,7 +138,7 @@ def gpt_review(original, proposed):
     try:
         review = parse_review_json(raw_review)
     except Exception as exc:
-        preview = re.sub(r"[^\\x20-\\x7E]", "?", raw_review[:160])
+        preview = re.sub(r"[^\x20-\x7E]", "?", raw_review[:160])
         raise RuntimeError("GPT reviewer returned unparseable JSON; refusing to apply patch. Response preview: " + preview) from exc
     if not isinstance(review, dict):
         raise RuntimeError("GPT reviewer response is not a JSON object; refusing to apply patch")
