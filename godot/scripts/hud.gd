@@ -4,14 +4,14 @@ var player: Node
 var health_label: Label
 var message_label: Label
 var ammo_label: Label
-var joystick_origin := Vector2.ZERO
-var joystick_touch := -1
-var joystick_vector := Vector2.ZERO
 var inventory_panel: PanelContainer
 var inventory_label: Label
 var inventory_button: Button
 var save_button: Button
 var load_button: Button
+var settings_button: Button
+var settings_panel: PanelContainer
+var sensitivity_slider: HSlider
 
 func _ready() -> void:
     add_to_group("hud")
@@ -35,7 +35,7 @@ func _ready() -> void:
     _make_action(root, "İLK YARDIM", Vector2(-155, -225), "use_first_aid")
     _build_inventory_panel(root)
     _build_save_controls(root)
-    root.gui_input.connect(_on_root_input)
+    _build_settings_controls(root)
 
 func _build_save_controls(root: Control) -> void:
     save_button = Button.new()

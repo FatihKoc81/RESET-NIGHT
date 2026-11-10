@@ -20,7 +20,7 @@ func _input(event: InputEvent) -> void:
     var screen_size := get_viewport().get_visible_rect().size
     if event is InputEventScreenTouch:
         if event.pressed:
-            if event.position.x >= screen_size.x * 0.5 and event.position.y < screen_size.y * 0.68 and _look_touch == -1:
+            if event.position.x >= screen_size.x * 0.5 and event.position.y < screen_size.y * 0.56 and _look_touch == -1:
                 _look_touch = event.index
                 _find_camera()
         elif event.index == _look_touch:

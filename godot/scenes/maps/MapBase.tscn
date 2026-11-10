@@ -23,7 +23,8 @@ environment = SubResource("Environment_night")
 rotation_degrees = Vector3(-52, -28, 0)
 light_color = Color(0.101961, 0.137255, 0.227451, 1)
 light_energy = 0.18
-shadow_enabled = true\ndirectional_shadow_max_distance = 35.0
+shadow_enabled = true
+directional_shadow_max_distance = 35.0
 
 [node name="NavigationRegion3D" type="NavigationRegion3D" parent="."]
 

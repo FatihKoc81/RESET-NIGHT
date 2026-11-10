@@ -32,6 +32,9 @@ func _ready() -> void:
     health = max_health
     call_deferred("_find_hud")
     flashlight_on = flashlight.is_on
+    var mobile_input := get_node_or_null("/root/MobileInputManager")
+    if is_instance_valid(mobile_input):
+        mobile_input.is_flashlight_on = flashlight_on
     $InventoryManager.add_item("spiked_bat", 1)
     $InventoryManager.add_item("molotov", molotov_count)
     molotov_count = 0
@@ -58,7 +61,10 @@ func _physics_process(delta: float) -> void:
             shotgun_ammo += amount
             shotgun_reserve -= amount
             _notify("Pompalı dolduruldu")
-    var input := Input.get_vector("move_left", "move_right", "move_forward", "move_back")\n    var mobile_input := get_node_or_null("/root/MobileInputManager")\n    if OS.has_feature("mobile") and is_instance_valid(mobile_input) and mobile_input.move_vector.length() > 0.01:\n        input = mobile_input.move_vector
+    var input := Input.get_vector("move_left", "move_right", "move_forward", "move_back")
+    var mobile_input := get_node_or_null("/root/MobileInputManager")
+    if OS.has_feature("mobile") and is_instance_valid(mobile_input) and mobile_input.move_vector.length() > 0.01:
+        input = mobile_input.move_vector
     var direction := (global_transform.basis * Vector3(input.x, 0, input.y)).normalized()
     if input.length() > 0.08:
         velocity.x = direction.x * move_speed
@@ -131,6 +137,9 @@ func craft_item(recipe_id: String) -> void:
 func toggle_flashlight() -> void:
     flashlight.toggle()
     flashlight_on = flashlight.is_on
+    var mobile_input := get_node_or_null("/root/MobileInputManager")
+    if is_instance_valid(mobile_input):
+        mobile_input.is_flashlight_on = flashlight_on
     _notify("Fener açık — düşman görüşü arttı" if flashlight_on else "Fener kapalı — gizlilik aktif")
 
 func use_bat() -> void:

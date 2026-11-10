@@ -16,7 +16,7 @@ func _input(event: InputEvent) -> void:
     var screen_size := get_viewport_rect().size
     if event is InputEventScreenTouch:
         if event.pressed:
-            if event.position.x < screen_size.x * 0.48 and event.position.y > screen_size.y * 0.42 and _touch_index == -1:
+            if event.position.x < screen_size.x * 0.48 and event.position.y > screen_size.y * 0.70 and _touch_index == -1:
                 _touch_index = event.index
                 _origin = event.position
                 _update_move(event.position)
