@@ -1,4 +1,4 @@
-[gd_scene load_steps=5 format=3]
+[gd_scene load_steps=6 format=3]
 
 [ext_resource type="PackedScene" path="res://scenes/Player.tscn" id="1_player"]
 [ext_resource type="Script" path="res://scripts/enemy_spawner.gd" id="2_spawner"]
@@ -11,6 +11,9 @@ ambient_light_source = 3
 ambient_light_color = Color(0.32, 0.38, 0.5, 1)
 ambient_light_energy = 0.7
 tonemap_mode = 2
+
+[sub_resource type="PlaneMesh" id="GroundMesh"]
+size = Vector2(100, 100)
 
 [sub_resource type="BoxShape3D" id="GroundShape"]
 size = Vector3(100, 1, 100)
@@ -29,7 +32,7 @@ shadow_enabled = true
 position = Vector3(0, -0.55, 0)
 
 [node name="Mesh" type="MeshInstance3D" parent="Ground"]
-mesh = PlaneMesh.new()
+mesh = SubResource("GroundMesh")
 scale = Vector3(50, 1, 50)
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Ground"]
