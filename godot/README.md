@@ -1,59 +1,27 @@
-# RESET NIGHT — Godot 4 3D
+# RESET NIGHT — Godot 4 3D Third-Person Survival
 
-Bu klasör, mevcut Android/Capacitor sürümünden ayrı tutulan Godot 4 tabanlı 3D üçüncü şahıs hayatta kalma prototipidir.
+RESET NIGHT'in oyun mimarisi Godot 4 3D olarak yapılandırılmıştır. Oyun 3D karakter, 3D çevre, üçüncü şahıs kamera, fener, 3D silah ve mobil dokunmatik kontroller kullanır.
 
 ## Açma
-1. Godot 4.3 veya daha yeni bir Godot 4 sürümünü açın.
-2. Bu klasördeki `project.godot` dosyasını seçin.
-3. `scenes/Main.tscn` sahnesini çalıştırın.
+1. Godot 4.3 veya daha yeni bir Godot 4 sürümüyle `godot/project.godot` dosyasını açın.
+2. Ana menüden **OYUNA BAŞLA** seçin.
+3. Oyun sahnesi `scenes/Main3D.tscn`; 3D harita `scenes/maps/Map3D.tscn` ve oyuncu `scenes/player/Player3D.tscn` dosyalarıdır.
+
+## 3D mimari
+- `Player3D.tscn`: CharacterBody3D, CapsuleShape3D, 3D karakter görseli, Gun3D, SpringArm3D, Camera3D, SpotLight3D ve InventoryManager.
+- `Map3D.tscn`: Node3D, WorldEnvironment, ay ışığı, NavigationRegion3D, zemin/çevre düğümleri ve spawn işaretleri.
+- `Main3D.tscn`: harita, oyuncu, düşman üretici, barikat üretici, HUD ve mobil kontrolleri birleştirir.
+- Eski Player.tscn ve MapBase.tscn dosyaları geriye dönük referans için korunur; ana oyun akışında kullanılmaz.
 
 ## Kontroller
-- WASD: hareket
-- Fare: karakter yönü
-- Space: çivili sopa
-- Q: molotof
-- F: pompalı
-- R: pompalı doldur
-- L: el fenerini aç/kapat
-- Android: sol alt alanda sanal joystick; sağ alttaki aksiyon tuşları ve fener düğmesi
+- PC: WASD hareket, fare kamera yönü, Space sopa, F pompalı, R doldur, Q molotof, L fener, E ara, H ilk yardım, I çanta.
+- Android: sol alt sanal joystick; sağ üst ekranda sürükleme ile kamera; HUD üzerindeki VUR, ATEŞ, İLK YARDIM, DOLDUR, FENER ve ARA düğmeleri.
 
-## Harita ve atmosfer
-- `scenes/maps/MapBase.tscn`: 3D harita kökü, WorldEnvironment, ay ışığı, NavigationRegion3D, GridMap3D, çevre nesneleri ve SpawnPoints3D.
-- `scripts/map_environment.gd`: çatlak asfalt, beton kaldırımlar, terk edilmiş araçlar, sokak lambaları, yanan variller, tel örgü ve yıkık duvarları prosedürel olarak üretir.
-- Gece ortamı #050608 arka plan, #0a0c12 ambient renk/0.15 enerji, #0f1218 sis/0.035 yoğunluk ve #1a233a ay ışığı/0.18 enerjiyle ayarlıdır. Godot projesi GL Compatibility kullandığından volumetrik sis bu render modunda etkinleştirilemez; standart atmosferik sis kullanılır.
-- Oyuncu feneri CameraPivot altındaki SpotLight3D: 45 derece, 2.8 enerji, 16 m menzil ve gerçek zamanlı gölge desteği.
-- Fener açıkken düşman algılama mesafesi 1.7 katına çıkar; kapalıyken algılama 3 m yakın mesafeyle sınırlıdır.
-- Düşman görüşü fizik ışın testiyle engellere takılır.
+## Atmosfer ve performans
+- Gece arka planı #050608; ambient ışık düşük, ay ışığı soğuk ve zayıf, standart atmosferik sis etkin.
+- Oyuncu feneri SpotLight3D, 45 derece açı, 16 metre menzil, gölge desteği.
+- Proje Android uyumluluğu için GL Compatibility renderer kullanır. Bu renderer volumetrik sis desteklemediği için gerçek volumetrik sis yerine performans dostu standart 3D fog kullanılır.
+- Çevre nesneleri prosedürel primitive mesh placeholder'lardır. Gerçek sanat varlıkları ve ayrıntılı LOD modelleri henüz eklenmemiştir.
 
-## Silahlar
-- Çivili sopa: 25 hasar, 1.2 sn bekleme, %15 sersemletme.
-- Molotof: 5 sn yangın alanı, saniyede 15 hasar.
-- Paslı pompalı: 6 saçma, 12 hasar/saçma, 2+20 mühimmat, 2.5 sn doldurma.
-
-## Teknik not
-Harita nesneleri bu prototipte Godot primitive mesh ve malzemeleriyle üretilen oynanabilir placeholder varlıklardır; listelenen PNG sanat dosyaları henüz çizilmiş gerçek texture dosyaları değildir. Godot Android APK export işlemi ayrıca yapılandırılmalı ve cihazda test edilmelidir.
-
-
-## Envanter, yağma ve üretim
-- Oyuncu altında `InventoryManager` kaynak envanterini ve tarifleri yönetir.
-- Tahta, hurda metal, dikenli tel, kumaş ve alkol kaynakları sandıklardan rastgele çıkar.
-- Haritada üç aranabilir 3D ganimet noktası bulunur. Yaklaşınca E / ARA düğmesiyle 2 saniye arama yapılır; sandık tek kullanımlıktır.
-- I / ÇANTA envanteri açar. Menüden molotof, ilk yardım kiti ve dikenli sopa takviyesi üretilebilir.
-- H / İLK YARDIM, ilk yardım kiti tüketerek 45 sağlık yeniler.
-- Eşya yığın limitleri item verisinde tanımlıdır; envanter doluysa fazla ganimet alınmaz.
-- Android HUD üzerinde ARA, ÇANTA ve ilk yardım düğmeleri bulunur.
-
-
-## Kayıt / yükleme
-- `SaveManager` otomatik yüklenen yerel servis olarak çalışır.
-- Kayıt dosyası Android uygulamasında `user://save_game.dat` konumundadır.
-- Oyuncu sağlığı, dayanıklılığı, konumu, yönü, fener durumu, pompalı mühimmatı, envanter, gece/süre/skor/öldürme istatistikleri, yerleştirilmiş barikatlar ve aranmış ganimet sandıkları kaydedilir.
-- Oyun 30 saniyede bir otomatik kaydeder; uygulama arka plana alındığında/kapatılırken de kayıt denenir.
-- HUD'daki KAYDET ve YÜKLE düğmeleri elle kayıt ve geri yükleme sağlar.
-
-## Android dokunmatik kontroller ve performans
-- `scenes/ui/MobileControls.tscn`: sol alt bölgede görünmez sanal joystick alanı; çoklu dokunma desteklenir.
-- `scripts/mobile_input_manager.gd`: sağ üst/orta ekran sürüklemesiyle karakter yatay yönü ve CameraPivot dikey açısı kontrol edilir. Kamera hassasiyeti varsayılan `0.005`; AYARLAR panelindeki kaydırıcıyla değiştirilebilir ve `user://mobile_settings.cfg` dosyasına kaydedilir.
-- Sağ alt aksiyon düğmeleri HUD üzerinde kalır; bu alan kamera sürükleme bölgesinin dışında tutulur.
-- Renderer Android için GL Compatibility (OpenGL ES 3.0), V-Sync açık, hedef üst sınır 60 FPS; yönlü ve konumsal gölge atlasları (mobil override dâhil) 1024, yönlü gölge mesafesi 35 m; dekoratif sokak/varil ışıklarının gerçek zamanlı gölgeleri kapalıdır olarak ayarlanmıştır.
-- Compatibility renderer volumetrik sisi desteklemediğinden mevcut standart sis korunur. Prosedürel çevre mesh'lerinde 70 m görünürlük sınırı ve 10 m yumuşak geçiş kullanılır; bu gerçek mesh LOD üretimi değildir.
+## Önemli
+GitHub'a gönderilen kaynaklar cihazda Godot editörüyle açılıp Android export alınarak test edilmelidir. Bu çalışma otomatik olarak imzalı APK üretmez.

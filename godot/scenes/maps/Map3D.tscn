@@ -1,0 +1,43 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/map_environment.gd" id="1_map"]
+
+[sub_resource type="Environment" id="Environment_night"]
+background_mode = 1
+background_color = Color(0.019608, 0.023529, 0.031373, 1)
+ambient_light_source = 3
+ambient_light_color = Color(0.039216, 0.047059, 0.070588, 1)
+ambient_light_energy = 0.15
+tonemap_mode = 2
+fog_enabled = true
+fog_light_color = Color(0.058824, 0.070588, 0.094118, 1)
+fog_density = 0.035
+
+[node name="Map3D" type="Node3D"]
+script = ExtResource("1_map")
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_night")
+
+[node name="Moonlight" type="DirectionalLight3D" parent="."]
+rotation_degrees = Vector3(-52, -28, 0)
+light_color = Color(0.101961, 0.137255, 0.227451, 1)
+light_energy = 0.18
+shadow_enabled = true
+directional_shadow_max_distance = 35.0
+
+[node name="NavigationRegion3D" type="NavigationRegion3D" parent="."]
+
+[node name="GroundTiles" type="Node3D" parent="NavigationRegion3D"]
+
+[node name="GridMap3D" type="Node3D" parent="NavigationRegion3D/GroundTiles"]
+
+[node name="EnvironmentProps3D" type="Node3D" parent="NavigationRegion3D"]
+
+[node name="SpawnPoints3D" type="Node3D" parent="."]
+
+[node name="PlayerSpawnPoint" type="Marker3D" parent="SpawnPoints3D"]
+position = Vector3(0, 0.2, 0)
+
+[node name="EnemySpawnPoint_Scavenger" type="Marker3D" parent="SpawnPoints3D"]
+position = Vector3(16, 0.2, -14)

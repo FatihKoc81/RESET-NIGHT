@@ -1,0 +1,48 @@
+[gd_scene load_steps=7 format=3]
+
+[ext_resource type="Script" path="res://scripts/player.gd" id="1"]
+[ext_resource type="Script" path="res://scripts/flashlight.gd" id="2"]
+[ext_resource type="Script" path="res://scripts/inventory_manager.gd" id="3"]
+[ext_resource type="PackedScene" path="res://scenes/characters/PlayerSurvivor.tscn" id="4"]
+[ext_resource type="PackedScene" path="res://scenes/weapons/Gun3D.tscn" id="5"]
+
+[sub_resource type="CapsuleShape3D" id="Capsule_player"]
+radius = 0.42
+height = 1.8
+
+[node name="Player3D" type="CharacterBody3D" groups=["player"]]
+script = ExtResource("1")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+shape = SubResource("Capsule_player")
+position = Vector3(0, 0.9, 0)
+
+[node name="Visual" parent="." instance=ExtResource("4")]
+
+[node name="WeaponPivot" type="Marker3D" parent="."]
+position = Vector3(0.34, 1.18, -0.38)
+
+[node name="Gun3D" parent="WeaponPivot" instance=ExtResource("5")]
+
+[node name="CameraPivot" type="Node3D" parent="."]
+position = Vector3(0, 1.7, 0)
+rotation_degrees = Vector3(-17, 0, 0)
+
+[node name="SpringArm3D" type="SpringArm3D" parent="CameraPivot"]
+spring_length = 5.2
+margin = 0.25
+
+[node name="Camera3D" type="Camera3D" parent="CameraPivot/SpringArm3D"]
+current = true
+fov = 72.0
+
+[node name="Flashlight" type="SpotLight3D" parent="CameraPivot"]
+position = Vector3(0, 0, -0.35)
+light_energy = 2.8
+spot_range = 16.0
+spot_angle = 45.0
+shadow_enabled = true
+script = ExtResource("2")
+
+[node name="InventoryManager" type="Node" parent="."]
+script = ExtResource("3")
