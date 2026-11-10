@@ -53,20 +53,7 @@ jobs:
           godot --headless --editor --path godot --quit
           godot --headless --path godot --script res://scripts/validate_scenes.gd
 
-      - name: Create reviewable pull request (never push to main)
-        uses: peter-evans/create-pull-request@v7
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          branch: ai/generated-${{ github.run_number }}
-          delete-branch: true
-          title: "AI proposal: ${{ inputs.task }}"
-          body-path: ai-pr-body.md
-          commit-message: "AI proposal: ${{ inputs.task }}"
-          add-paths: |
-            ${{ inputs.target_file }}
-
       - name: Prepare PR review summary
-        if: always()
         run: |
           if [ -f ai-code-review.json ]; then
             python3 - <<'PY'
@@ -84,6 +71,18 @@ jobs:
               f.write("\nGodot headless project import and scene validation passed before this PR was created. Android APK and real-device tests still require separate verification.\n")
           PY
           fi
+
+      - name: Create reviewable pull request (never push to main)
+        uses: peter-evans/create-pull-request@v7
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          branch: ai/generated-${{ github.run_number }}
+          delete-branch: true
+          title: "AI proposal: ${{ inputs.task }}"
+          body-path: ai-pr-body.md
+          commit-message: "AI proposal: ${{ inputs.task }}"
+          add-paths: |
+            ${{ inputs.target_file }}
 
       - name: Upload AI review report
         if: always()
