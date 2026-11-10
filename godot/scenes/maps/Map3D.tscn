@@ -1,6 +1,11 @@
-[gd_scene load_steps=3 format=3]
+[gd_scene load_steps=8 format=3]
 
 [ext_resource type="Script" path="res://scripts/map_environment.gd" id="1_map"]
+[ext_resource type="PackedScene" path="res://scenes/player/Player3D.tscn" id="2_player"]
+[ext_resource type="Script" path="res://scripts/enemy_spawner.gd" id="3_spawner"]
+[ext_resource type="Script" path="res://scripts/barricade_spawner.gd" id="4_barricades"]
+[ext_resource type="PackedScene" path="res://scenes/ui/HUD3D.tscn" id="5_hud"]
+[ext_resource type="PackedScene" path="res://scenes/ui/MobileControls.tscn" id="6_mobile"]
 
 [sub_resource type="Environment" id="Environment_night"]
 background_mode = 1
@@ -41,3 +46,16 @@ position = Vector3(0, 0.2, 0)
 
 [node name="EnemySpawnPoint_Scavenger" type="Marker3D" parent="SpawnPoints3D"]
 position = Vector3(16, 0.2, -14)
+
+[node name="Player3D" parent="." instance=ExtResource("2_player")]
+position = Vector3(0, 0.2, 0)
+
+[node name="EnemySpawner" type="Node3D" parent="."]
+script = ExtResource("3_spawner")
+
+[node name="Barricades" type="Node3D" parent="."]
+script = ExtResource("4_barricades")
+
+[node name="HUD3D" parent="." instance=ExtResource("5_hud")]
+
+[node name="MobileControls" parent="HUD3D" instance=ExtResource("6_mobile")]

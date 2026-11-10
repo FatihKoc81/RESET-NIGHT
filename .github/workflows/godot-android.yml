@@ -1,0 +1,37 @@
+name: RESET NIGHT Godot 4 Android APK
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - "godot/**"
+      - ".github/workflows/godot-android.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  export-android:
+    runs-on: ubuntu-latest
+    container:
+      image: barichello/godot-ci:4.3
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Check Godot and Android SDK
+        run: |
+          godot --version
+          test -n "$ANDROID_HOME" || test -n "$ANDROID_SDK_ROOT"
+      - name: Import project and export Android APK
+        run: |
+          chmod +x godot/build_android.sh
+          godot/build_android.sh
+      - name: Verify APK exists
+        run: test -s RESET-NIGHT-GODOT.apk
+      - name: Upload Godot Android APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: RESET-NIGHT-GODOT-Android
+          path: RESET-NIGHT-GODOT.apk
+          if-no-files-found: error

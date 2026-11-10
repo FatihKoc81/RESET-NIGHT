@@ -1,11 +1,19 @@
-[gd_scene load_steps=5 format=3]
+[gd_scene load_steps=8 format=3]
 
 [ext_resource type="Script" path="res://scripts/gun_3d.gd" id="1_gun"]
+[ext_resource type="Shader" path="res://shaders/comic_cel.gdshader" id="2_comic"]
+[ext_resource type="Shader" path="res://shaders/ink_outline.gdshader" id="3_ink"]
 
-[sub_resource type="StandardMaterial3D" id="GunMat"]
-albedo_color = Color(0.075, 0.085, 0.095, 1)
-metallic = 0.72
-roughness = 0.38
+[sub_resource type="ShaderMaterial" id="GunMat"]
+shader = ExtResource("2_comic")
+shader_parameter/base_color = Color(0.075, 0.085, 0.095, 1)
+shader_parameter/hatch_strength = 0.32
+next_pass = SubResource("GunOutline")
+
+[sub_resource type="ShaderMaterial" id="GunOutline"]
+shader = ExtResource("3_ink")
+shader_parameter/outline_color = Color(0.025, 0.025, 0.03, 1)
+shader_parameter/outline_width = 0.012
 
 [sub_resource type="BoxMesh" id="ReceiverMesh"]
 size = Vector3(0.16, 0.14, 0.52)

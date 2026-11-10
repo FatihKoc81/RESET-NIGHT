@@ -1,6 +1,6 @@
 extends Control
 
-const GAME_SCENE := "res://scenes/Main3D.tscn"
+const GAME_SCENE := "res://scenes/maps/Map3D.tscn"
 const BUILDER = preload("res://scripts/ui_asset_builder.gd")
 
 var _continue_button: Button
@@ -94,13 +94,18 @@ func _layout_menu() -> void:
         content.position = Vector2((size.x - w) * 0.5, (size.y - 480.0) * 0.5)
 
 func _start_game() -> void:
-    get_tree().change_scene_to_file(GAME_SCENE)
+    var error := get_tree().change_scene_to_file(GAME_SCENE)
+    if error != OK:
+        _notice.text = "3D oyun alanı açılamadı. Hata kodu: %d" % error
 
 func _continue_game() -> void:
     if not FileAccess.file_exists("user://save_game.dat"):
         _notice.text = "Henüz kayıtlı oyun bulunamadı."
         return
-    get_tree().change_scene_to_file(GAME_SCENE)
+    var error := get_tree().change_scene_to_file(GAME_SCENE)
+    if error != OK:
+        _notice.text = "Kayıtlı oyun alanı açılamadı. Hata kodu: %d" % error
+        return
     await get_tree().process_frame
     await get_tree().process_frame
     var saver := get_node_or_null("/root/SaveManager")

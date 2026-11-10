@@ -1,27 +1,26 @@
-# RESET NIGHT — Godot 4 3D Third-Person Survival
+# RESET NIGHT — Godot 4 3D Comic Survival
 
-RESET NIGHT'in oyun mimarisi Godot 4 3D olarak yapılandırılmıştır. Oyun 3D karakter, 3D çevre, üçüncü şahıs kamera, fener, 3D silah ve mobil dokunmatik kontroller kullanır.
+## Çalıştırma
+Godot 4.3+ ile bu klasördeki `project.godot` dosyasını açın. Ana menüde **OYUNA BAŞLA**, doğrudan `scenes/maps/Map3D.tscn` oyun alanını açar. Harita sahnesi oyuncu, düşman üretimi, barikatlar, HUD ve mobil dokunmatik kontrolleri kendi içinde barındırır.
 
-## Açma
-1. Godot 4.3 veya daha yeni bir Godot 4 sürümüyle `godot/project.godot` dosyasını açın.
-2. Ana menüden **OYUNA BAŞLA** seçin.
-3. Oyun sahnesi `scenes/Main3D.tscn`; 3D harita `scenes/maps/Map3D.tscn` ve oyuncu `scenes/player/Player3D.tscn` dosyalarıdır.
+## 3D sahne yapısı
+- `scenes/maps/Map3D.tscn`: oynanabilir ana harita ve tüm oyun bileşenlerinin giriş sahnesi.
+- `scenes/player/Player3D.tscn`: CharacterBody3D oyuncu, kamera, fener ve Gun3D.
+- `scenes/enemies/ZombieWalker3D.tscn`: çizgi roman kaplamalı yürüteç zombi görseli.
+- `scenes/ui/MobileControls.tscn`: mobil sanal joystick girişi; HUD aksiyon düğmeleriyle birlikte çalışır.
 
-## 3D mimari
-- `Player3D.tscn`: CharacterBody3D, CapsuleShape3D, 3D karakter görseli, Gun3D, SpringArm3D, Camera3D, SpotLight3D ve InventoryManager.
-- `Map3D.tscn`: Node3D, WorldEnvironment, ay ışığı, NavigationRegion3D, zemin/çevre düğümleri ve spawn işaretleri.
-- `Main3D.tscn`: harita, oyuncu, düşman üretici, barikat üretici, HUD ve mobil kontrolleri birleştirir.
-- Eski Player.tscn ve MapBase.tscn dosyaları geriye dönük referans için korunur; ana oyun akışında kullanılmaz.
+## Comic / cel-shading
+`shaders/comic_cel.gdshader` basamaklı ışıklandırma ve çapraz tarama dokusu uygular. `shaders/ink_outline.gdshader` siyah dış konturu üretir. Oyuncu, zombi ve pompalı tüfek materyalleri bu iki shader katmanını kullanır. Stil, The Walking Dead çizgi romanının atmosferinden esinlenen özgün bir uygulamadır; resmi görsel varlık içermez.
 
-## Kontroller
-- PC: WASD hareket, fare kamera yönü, Space sopa, F pompalı, R doldur, Q molotof, L fener, E ara, H ilk yardım, I çanta.
-- Android: sol alt sanal joystick; sağ üst ekranda sürükleme ile kamera; HUD üzerindeki VUR, ATEŞ, İLK YARDIM, DOLDUR, FENER ve ARA düğmeleri.
+## Android APK
+- `export_presets.cfg`: Android / arm64-v8a dışa aktarma profili.
+- `build_android.sh`: Godot 4 headless import, Android export ve APK dosyası doğrulama adımları.
+- GitHub Actions: `.github/workflows/godot-android.yml`; Godot 4.3 CI ortamında APK üretip artifact olarak yükler.
 
-## Atmosfer ve performans
-- Gece arka planı #050608; ambient ışık düşük, ay ışığı soğuk ve zayıf, standart atmosferik sis etkin.
-- Oyuncu feneri SpotLight3D, 45 derece açı, 16 metre menzil, gölge desteği.
-- Proje Android uyumluluğu için GL Compatibility renderer kullanır. Bu renderer volumetrik sis desteklemediği için gerçek volumetrik sis yerine performans dostu standart 3D fog kullanılır.
-- Çevre nesneleri prosedürel primitive mesh placeholder'lardır. Gerçek sanat varlıkları ve ayrıntılı LOD modelleri henüz eklenmemiştir.
+Yerel derleme için Godot 4.3+, Android SDK, JDK ve Android export templates kurulu olmalıdır:
+```bash
+cd godot
+./build_android.sh
+```
 
-## Önemli
-GitHub'a gönderilen kaynaklar cihazda Godot editörüyle açılıp Android export alınarak test edilmelidir. Bu çalışma otomatik olarak imzalı APK üretmez.
+Not: Kaynak kod GitHub'a push edildiğinde CI iş akışı tetiklenir. APK'nın gerçekten üretildiği, ilgili GitHub Actions çalışması başarılı olduktan sonra doğrulanmış olur.

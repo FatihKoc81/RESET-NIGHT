@@ -16,7 +16,8 @@ func _ready() -> void:
     _build_ground()
     _build_street_props()
     _build_walls_and_fences()
-    _build_loot_containers()\n    _apply_mobile_visibility_ranges()
+    _build_loot_containers()
+    _apply_mobile_visibility_ranges()
 
 func _make_materials() -> void:
     asphalt = _mat(Color(0.055, 0.063, 0.073), 0.95)
@@ -45,7 +46,6 @@ func _build_ground() -> void:
     _box(null, Vector3(0, 0.08, 0.0), Vector3(70, 0.22, 1.8), sidewalk, true)
     _box(null, Vector3(0, 0.08, 7.0), Vector3(70, 0.22, 1.8), sidewalk, true)
     _box(null, Vector3(0, 0.08, 14.0), Vector3(70, 0.22, 1.8), sidewalk, true)
-    # Cracked road markings and broken pavement strips.
     for i in range(12):
         var x := -28.0 + float(i) * 5.0
         _box(null, Vector3(x, 0.025, -7.0), Vector3(0.12, 0.025, 0.75), concrete, false)
@@ -68,7 +68,6 @@ func _build_walls_and_fences() -> void:
         _box($NavigationRegion3D/EnvironmentProps3D, Vector3(-25.0 + float(i) * 2.0, 0.8, 15.0), Vector3(1.95, 1.6, 0.45), brick, true)
     _fence(Vector3(22, 0, 4), 10.0)
     _fence(Vector3(-22, 0, -5), 8.0)
-    # Debris piles give the street cover and break up long sight lines.
     _box($NavigationRegion3D/EnvironmentProps3D, Vector3(4, 0.45, -2), Vector3(2.1, 0.9, 1.2), concrete, true)
     _box($NavigationRegion3D/EnvironmentProps3D, Vector3(-3, 0.35, 9), Vector3(1.5, 0.7, 1.0), concrete, true)
 
@@ -196,24 +195,19 @@ func _fence(pos: Vector3, length: float) -> void:
     _box(root, Vector3(length * 0.5, 2.35, 0), Vector3(length, 0.07, 0.07), metal, false)
 
 func _abandoned_house(pos: Vector3) -> void:
-    # Simple ruined house shell with a doorway, boarded windows and blocked interior.
     var root := StaticBody3D.new()
     root.position = pos
     $NavigationRegion3D/EnvironmentProps3D.add_child(root)
     _add_box_mesh(root, Vector3(0, 0.12, 0), Vector3(11.0, 0.24, 8.0), concrete, true)
-    # Rear and side walls.
     _add_box_mesh(root, Vector3(0, 1.65, -3.85), Vector3(11.0, 3.3, 0.3), brick, true)
     _add_box_mesh(root, Vector3(-5.35, 1.65, 0), Vector3(0.3, 3.3, 7.7), brick, true)
     _add_box_mesh(root, Vector3(5.35, 1.65, 0), Vector3(0.3, 3.3, 7.7), brick, true)
-    # Front wall is split to leave a narrow entrance.
     _add_box_mesh(root, Vector3(-3.75, 1.65, 3.85), Vector3(3.2, 3.3, 0.3), brick, true)
     _add_box_mesh(root, Vector3(3.75, 1.65, 3.85), Vector3(3.2, 3.3, 0.3), brick, true)
     _add_box_mesh(root, Vector3(0, 3.05, 3.85), Vector3(4.3, 0.5, 0.3), brick, true)
-    # Interior partition and boards make the house read as abandoned/barricaded.
     _add_box_mesh(root, Vector3(0, 1.25, -1.0), Vector3(0.25, 2.5, 4.8), concrete, true)
     _add_box_mesh(root, Vector3(-5.12, 2.0, -1.2), Vector3(0.12, 0.18, 2.0), metal, true)
     _add_box_mesh(root, Vector3(5.12, 2.0, -1.2), Vector3(0.12, 0.18, 2.0), metal, true)
-    # Flat damaged roof slab.
     _add_box_mesh(root, Vector3(0, 3.35, 0), Vector3(11.4, 0.28, 8.4), concrete, true)
 
 func _build_loot_containers() -> void:
@@ -228,7 +222,6 @@ func _spawn_loot(pos: Vector3, label: String) -> void:
     $NavigationRegion3D/EnvironmentProps3D.add_child(container)
 
 func _apply_mobile_visibility_ranges() -> void:
-    # Distance culling for procedural environment meshes; no imported LOD assets exist yet.
     var props := $NavigationRegion3D/EnvironmentProps3D
     for node in props.find_children("*", "MeshInstance3D", true, false):
         var mesh_instance := node as MeshInstance3D
