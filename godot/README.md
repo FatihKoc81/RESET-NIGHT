@@ -42,3 +42,11 @@ Harita nesneleri bu prototipte Godot primitive mesh ve malzemeleriyle üretilen 
 - H / İLK YARDIM, ilk yardım kiti tüketerek 45 sağlık yeniler.
 - Eşya yığın limitleri item verisinde tanımlıdır; envanter doluysa fazla ganimet alınmaz.
 - Android HUD üzerinde ARA, ÇANTA ve ilk yardım düğmeleri bulunur.
+
+
+## Kayıt / yükleme
+- `SaveManager` otomatik yüklenen yerel servis olarak çalışır.
+- Kayıt dosyası Android uygulamasında `user://save_game.dat` konumundadır.
+- Oyuncu sağlığı, dayanıklılığı, konumu, yönü, fener durumu, pompalı mühimmatı, envanter, gece/süre/skor/öldürme istatistikleri, yerleştirilmiş barikatlar ve aranmış ganimet sandıkları kaydedilir.
+- Oyun 30 saniyede bir otomatik kaydeder; uygulama arka plana alındığında/kapatılırken de kayıt denenir.
+- HUD'daki KAYDET ve YÜKLE düğmeleri elle kayıt ve geri yükleme sağlar.

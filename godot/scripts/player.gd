@@ -10,6 +10,7 @@ const FIRST_AID_HEAL := 45.0
 @export var move_speed := 5.2
 @export var max_health := 100.0
 var health := 100.0
+var stamina := 100.0
 var shotgun_ammo := 2
 var shotgun_reserve := 20
 var molotov_count := 3
@@ -188,6 +189,7 @@ func take_damage(amount: float) -> void:
         hud.set_health(health, max_health)
     if health <= 0.0:
         _notify("GECE KAZANDI — karakter düştü")
+    get_node_or_null("/root/SaveManager")?.save_game()
 
 func _nearest_enemy(max_range: float) -> Node:
     var nearest: Node

@@ -71,6 +71,9 @@ func _wander(delta: float) -> void:
 func take_damage(amount: float) -> void:
     health -= amount
     if health <= 0.0:
+        var saver := get_node_or_null("/root/SaveManager")
+        if is_instance_valid(saver):
+            saver.register_enemy_kill()
         queue_free()
 
 func stun(duration: float) -> void:

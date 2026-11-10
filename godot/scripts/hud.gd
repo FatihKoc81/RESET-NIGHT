@@ -10,6 +10,8 @@ var joystick_vector := Vector2.ZERO
 var inventory_panel: PanelContainer
 var inventory_label: Label
 var inventory_button: Button
+var save_button: Button
+var load_button: Button
 
 func _ready() -> void:
     add_to_group("hud")
@@ -32,7 +34,38 @@ func _ready() -> void:
     _make_action(root, "ARA (E)", Vector2(-250, -225), "interact")
     _make_action(root, "İLK YARDIM", Vector2(-155, -225), "use_first_aid")
     _build_inventory_panel(root)
+    _build_save_controls(root)
     root.gui_input.connect(_on_root_input)
+
+func _build_save_controls(root: Control) -> void:
+    save_button = Button.new()
+    save_button.text = "KAYDET"
+    save_button.position = Vector2(22, 455)
+    save_button.size = Vector2(118, 44)
+    save_button.pressed.connect(_save_game)
+    root.add_child(save_button)
+    load_button = Button.new()
+    load_button.text = "YÜKLE"
+    load_button.position = Vector2(148, 455)
+    load_button.size = Vector2(118, 44)
+    load_button.pressed.connect(_load_game)
+    root.add_child(load_button)
+
+func _save_game() -> void:
+    var saver := get_node_or_null("/root/SaveManager")
+    if is_instance_valid(saver) and saver.save_game():
+        if is_instance_valid(player):
+            player._notify("Oyun kaydedildi")
+    else:
+        if is_instance_valid(player):
+            player._notify("Kayıt yapılamadı")
+
+func _load_game() -> void:
+    var saver := get_node_or_null("/root/SaveManager")
+    if is_instance_valid(saver) and saver.load_game():
+        _refresh_inventory()
+    elif is_instance_valid(player):
+        player._notify("Kayıt dosyası bulunamadı")
 
 func _build_inventory_panel(root: Control) -> void:
     inventory_button = Button.new()
