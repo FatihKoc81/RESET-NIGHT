@@ -2,7 +2,7 @@ extends CharacterBody3D
 
 @export var health := 60.0
 @export var walk_speed := 2.0
-@export var base_detection_range := 10.0
+@export var base_detection_range := 3.0
 var target: Node3D
 var attack_cooldown := 0.0
 var stun_time := 0.0
@@ -28,7 +28,7 @@ func _physics_process(delta: float) -> void:
         offset.y = 0.0
         var detection_range := base_detection_range
         if target.get("flashlight_on"):
-            detection_range *= 1.8
+            detection_range *= 1.7
         var can_see_player := offset.length() <= detection_range and _has_line_of_sight()
         if can_see_player:
             var direction := offset.normalized()

@@ -61,12 +61,12 @@ func _build_street_props() -> void:
 
 func _build_walls_and_fences() -> void:
     for i in range(5):
-        _box(null, Vector3(-25.0 + float(i) * 2.0, 0.8, 15.0), Vector3(1.95, 1.6, 0.45), brick, true)
+        _box($NavigationRegion3D/EnvironmentProps3D, Vector3(-25.0 + float(i) * 2.0, 0.8, 15.0), Vector3(1.95, 1.6, 0.45), brick, true)
     _fence(Vector3(22, 0, 4), 10.0)
     _fence(Vector3(-22, 0, -5), 8.0)
     # Debris piles give the street cover and break up long sight lines.
-    _box(null, Vector3(4, 0.45, -2), Vector3(2.1, 0.9, 1.2), concrete, true)
-    _box(null, Vector3(-3, 0.35, 9), Vector3(1.5, 0.7, 1.0), concrete, true)
+    _box($NavigationRegion3D/EnvironmentProps3D, Vector3(4, 0.45, -2), Vector3(2.1, 0.9, 1.2), concrete, true)
+    _box($NavigationRegion3D/EnvironmentProps3D, Vector3(-3, 0.35, 9), Vector3(1.5, 0.7, 1.0), concrete, true)
 
 func _box(parent: Node, pos: Vector3, size: Vector3, material: Material, collision: bool) -> StaticBody3D:
     var body := StaticBody3D.new()
@@ -74,7 +74,7 @@ func _box(parent: Node, pos: Vector3, size: Vector3, material: Material, collisi
     if parent:
         parent.add_child(body)
     else:
-        $GroundTiles.add_child(body)
+        $NavigationRegion3D/GroundTiles/GridMap3D.add_child(body)
     var mesh_instance := MeshInstance3D.new()
     var mesh := BoxMesh.new()
     mesh.size = size
@@ -114,7 +114,7 @@ func _car_wreck(pos: Vector3, angle: float) -> void:
     var root := StaticBody3D.new()
     root.position = pos
     root.rotation.y = angle
-    $EnvironmentProps.add_child(root)
+    $NavigationRegion3D/EnvironmentProps3D.add_child(root)
     _add_box_mesh(root, Vector3(0, 0.75, 0), Vector3(3.7, 1.05, 1.75), car_paint, true)
     _add_box_mesh(root, Vector3(0, 1.35, 0), Vector3(1.8, 0.65, 1.55), concrete, false)
     for x in [-1.25, 1.25]:
@@ -149,7 +149,7 @@ func _add_box_mesh(parent: Node, pos: Vector3, size: Vector3, material: Material
 func _street_lamp(pos: Vector3) -> void:
     var root := Node3D.new()
     root.position = pos
-    $EnvironmentProps.add_child(root)
+    $NavigationRegion3D/EnvironmentProps3D.add_child(root)
     _cylinder(root, Vector3(0, 3.0, 0), 0.09, 6.0, metal, true)
     _box(root, Vector3(0.48, 5.85, 0), Vector3(1.0, 0.12, 0.16), metal, false)
     var lamp := OmniLight3D.new()
@@ -163,7 +163,7 @@ func _street_lamp(pos: Vector3) -> void:
 func _burning_barrel(pos: Vector3) -> void:
     var root := Node3D.new()
     root.position = pos
-    $EnvironmentProps.add_child(root)
+    $NavigationRegion3D/EnvironmentProps3D.add_child(root)
     _cylinder(root, Vector3(0, 0.55, 0), 0.42, 1.1, metal, true)
     var flame := MeshInstance3D.new()
     var flame_mesh := SphereMesh.new()
@@ -184,7 +184,7 @@ func _burning_barrel(pos: Vector3) -> void:
 func _fence(pos: Vector3, length: float) -> void:
     var root := Node3D.new()
     root.position = pos
-    $EnvironmentProps.add_child(root)
+    $NavigationRegion3D/EnvironmentProps3D.add_child(root)
     var count := int(length / 2.0)
     for i in range(count + 1):
         _cylinder(root, Vector3(float(i) * 2.0, 1.25, 0), 0.055, 2.5, metal, true)

@@ -1,4 +1,4 @@
-[gd_scene load_steps=7 format=3]
+[gd_scene load_steps=5 format=3]
 
 [ext_resource type="PackedScene" path="res://scenes/Player.tscn" id="1_player"]
 [ext_resource type="Script" path="res://scripts/enemy_spawner.gd" id="2_spawner"]
@@ -6,25 +6,7 @@
 [ext_resource type="Script" path="res://scripts/barricade_spawner.gd" id="4_barricades"]
 [ext_resource type="PackedScene" path="res://scenes/maps/MapBase.tscn" id="5_map"]
 
-[sub_resource type="Environment" id="Environment_world"]
-background_mode = 1
-background_color = Color(0.012, 0.016, 0.025, 1)
-ambient_light_source = 3
-ambient_light_color = Color(0.12, 0.15, 0.21, 1)
-ambient_light_energy = 0.12
-tonemap_mode = 2
-fog_enabled = true
-fog_light_color = Color(0.035, 0.045, 0.065, 1)
-fog_density = 0.012
-
 [node name="Main" type="Node3D"]
-[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
-environment = SubResource("Environment_world")
-[node name="MoonLight" type="DirectionalLight3D" parent="."]
-rotation_degrees = Vector3(-52, -28, 0)
-light_color = Color(0.28, 0.36, 0.55, 1)
-light_energy = 0.08
-shadow_enabled = true
 [node name="MapBase" parent="." instance=ExtResource("5_map")]
 [node name="Player" parent="." instance=ExtResource("1_player")]
 position = Vector3(0, 1, 0)

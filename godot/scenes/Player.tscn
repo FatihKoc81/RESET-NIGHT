@@ -17,26 +17,34 @@ roughness = 0.88
 
 [node name="Player" type="CharacterBody3D" groups=["player"]]
 script = ExtResource("1_player")
+
 [node name="CollisionShape3D" type="CollisionShape3D" parent="."]
 shape = SubResource("Capsule_player")
 position = Vector3(0, 0.9, 0)
+
 [node name="Body" type="MeshInstance3D" parent="."]
 mesh = SubResource("CapsuleMesh_player")
 material_override = SubResource("Mat_player")
 position = Vector3(0, 0.9, 0)
+
 [node name="WeaponPivot" type="Marker3D" parent="."]
 position = Vector3(0, 1.05, -0.45)
-[node name="SpringArm3D" type="SpringArm3D" parent="."]
+
+[node name="CameraPivot" type="Node3D" parent="."]
 position = Vector3(0, 1.7, 0)
+
+[node name="SpringArm3D" type="SpringArm3D" parent="CameraPivot"]
 spring_length = 5.2
-[node name="Camera3D" type="Camera3D" parent="SpringArm3D"]
+
+[node name="Camera3D" type="Camera3D" parent="CameraPivot/SpringArm3D"]
 current = true
 fov = 72.0
-[node name="Flashlight" type="SpotLight3D" parent="."]
-position = Vector3(0, 1.45, -0.35)
+
+[node name="Flashlight" type="SpotLight3D" parent="CameraPivot"]
+position = Vector3(0, 0, -0.35)
 rotation_degrees = Vector3(0, 0, 0)
-light_energy = 1.5
-spot_range = 24.0
-spot_angle = 90.0
+light_energy = 2.8
+spot_range = 16.0
+spot_angle = 45.0
 shadow_enabled = true
 script = ExtResource("2_flashlight")
