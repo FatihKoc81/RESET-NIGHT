@@ -24,6 +24,17 @@ jobs:
           java-version: '17'
       - name: Install ImageMagick
         run: sudo apt-get update && sudo apt-get install -y imagemagick
+      - name: Restore stable Android debug signing key
+        uses: actions/cache@v4
+        with:
+          path: ~/.android/debug.keystore
+          key: reset-night-android-debug-keystore-v1
+      - name: Create signing key if missing
+        run: |
+          mkdir -p ~/.android
+          if [ ! -f ~/.android/debug.keystore ]; then
+            keytool -genkeypair -v -keystore ~/.android/debug.keystore -storepass android -alias androiddebugkey -keypass android -dname "CN=Android Debug,O=Android,C=US" -keyalg RSA -keysize 2048 -validity 10000
+          fi
       - name: Install dependencies
         run: npm install
       - name: Prepare game logo and Android launcher icons
@@ -54,6 +65,13 @@ jobs:
           ./gradlew assembleDebug --stacktrace
       - name: Rename APK for direct download
         run: cp android/app/build/outputs/apk/debug/app-debug.apk RESET-NIGHT.apk
+      - name: Verify APK package and signature
+        run: |
+          APK=RESET-NIGHT.apk
+          test -s "$APK"
+          BUILD_TOOLS="$ANDROID_HOME/build-tools/$(ls "$ANDROID_HOME/build-tools" | sort -V | tail -n1)"
+          "$BUILD_TOOLS/apksigner" verify --verbose "$APK"
+          "$BUILD_TOOLS/aapt" dump badging "$APK" | head -n 5
       - name: Publish direct APK release
         uses: softprops/action-gh-release@v2
         with:
