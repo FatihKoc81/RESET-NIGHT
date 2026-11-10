@@ -2,10 +2,10 @@
 
 [ext_resource type="PackedScene" path="res://scenes/Player.tscn" id="1_player"]
 [ext_resource type="Script" path="res://scripts/enemy_spawner.gd" id="2_spawner"]
-[ext_resource type="Script" path="res://scripts/hud.gd" id="3_hud"]
 [ext_resource type="Script" path="res://scripts/barricade_spawner.gd" id="4_barricades"]
 [ext_resource type="PackedScene" path="res://scenes/maps/MapBase.tscn" id="5_map"]
 [ext_resource type="PackedScene" path="res://scenes/ui/MobileControls.tscn" id="6_mobile"]
+[ext_resource type="PackedScene" path="res://scenes/ui/HUD3D.tscn" id="7_hud"]
 
 [node name="Main" type="Node3D"]
 [node name="MapBase" parent="." instance=ExtResource("5_map")]
@@ -15,6 +15,5 @@ position = Vector3(0, 1, 0)
 script = ExtResource("2_spawner")
 [node name="Barricades" type="Node3D" parent="."]
 script = ExtResource("4_barricades")
-[node name="HUD" type="CanvasLayer" parent="."]
-script = ExtResource("3_hud")
-[node name="MobileControls" parent="HUD" instance=ExtResource("6_mobile")]
+[node name="HUD3D" parent="." instance=ExtResource("7_hud")]
+[node name="MobileControls" parent="HUD3D" instance=ExtResource("6_mobile")]
