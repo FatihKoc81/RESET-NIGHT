@@ -63,6 +63,7 @@ p{color:#adb4c0;font-size:13px;line-height:1.5;margin:8px auto 16px;max-width:34
   <p>Şehir karanlığa gömüldü. Kaynakları topla, saldırganlardan kurtul ve gün doğana kadar hayatta kal.</p>
   <button class="btn" id="play">HAYATTA KAL</button>
   <div class="row"><button class="btn secondary" id="how">NASIL OYNANIR?</button><button class="btn secondary" id="sound">SES: AÇIK</button></div>
+  <button class="btn secondary" id="update" style="border-color:#d9a85d;color:#f0c887">↓ OYUNU GÜNCELLE</button>
   <div id="hint">TEK KİŞİLİK • ÇEVRİMDIŞI • KAYITLI REKOR</div>
  </div>
 </div>
@@ -173,6 +174,7 @@ bindButton("play",begin);bindButton("attack",melee);bindButton("shoot",shoot);bi
 bindButton("how",()=>{$("modalTitle").textContent="NASIL OYNANIR?";$("modalText").textContent="Sol kontrol alanıyla hareket et. VUR yakınındaki düşmanı iter ve hasar verir. ATEŞ en yakın hedefe ateş eder. Sandıkları yürüyerek topla: yeşil ilk yardım, sarı cephane, mavi hurda. Üç dakika hayatta kal. Bilgisayarda WASD, Space, J ve R tuşları çalışır.";$("modalOk").textContent="ANLADIM";$("modal").classList.remove("hide")});
 bindButton("modalOk",()=>{if(state==="end"){state="menu";$("modal").classList.add("hide");$("menu").classList.remove("hide")}else $("modal").classList.add("hide")});
 bindButton("sound",()=>{soundOn=!soundOn;$("sound").textContent="SES: "+(soundOn?"AÇIK":"KAPALI");if(soundOn)sfx(500,.08,"sine")});
+bindButton("update",()=>{toast("RESET NIGHT APK açılıyor…");window.location.href="https://github.com/FatihKoc81/RESET-NIGHT/releases/latest/download/RESET-NIGHT.apk"});
 let stick=$("stick"),nub=$("nub");
 function joyMove(e){let r=stick.getBoundingClientRect(),cx0=r.left+r.width/2,cy0=r.top+r.height/2,dx=e.clientX-cx0,dy=e.clientY-cy0,max=r.width*.34,m=Math.hypot(dx,dy);if(m>max){dx=dx/m*max;dy=dy/m*max}joy.x=dx/max;joy.y=dy/max;nub.style.transform="translate("+dx+"px,"+dy+"px)"}
 stick.addEventListener("pointerdown",e=>{e.preventDefault();joy.active=true;stick.setPointerCapture(e.pointerId);joyMove(e)});
