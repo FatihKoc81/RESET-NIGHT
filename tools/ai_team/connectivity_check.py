@@ -3,6 +3,7 @@
 import json
 import os
 import sys
+import re
 import urllib.error
 import urllib.request
 
@@ -15,6 +16,16 @@ def request(url, headers=None, body=None):
     except urllib.error.HTTPError as exc:
         detail = exc.read().decode(errors="replace")[:1200]
         raise RuntimeError(f"HTTP {exc.code}: {detail}") from exc
+
+def safe_error(exc):
+    """Redact API credentials before writing provider errors to Actions logs."""
+    message = str(exc)
+    for name in ("OPENAI_API_KEY", "GEMINI_API_KEY"):
+        secret = os.getenv(name)
+        if secret:
+            message = message.replace(secret, "[REDACTED]")
+    message = re.sub(r"sk-[A-Za-z0-9_-]{8,}", "[REDACTED_OPENAI_KEY]", message)
+    return message[:1200]
 
 def openai_check():
     key = os.environ["OPENAI_API_KEY"]
@@ -76,15 +87,24 @@ def main():
     if missing:
         print("Eksik GitHub Secrets: " + ", ".join(missing), file=sys.stderr)
         sys.exit(1)
-    try:
-        openai_model = openai_check()
-        print(f"OPENAI_OK model={openai_model}")
-        gemini_model = gemini_check()
-        print(f"GEMINI_OK model={gemini_model}")
-        print("RESET_NIGHT_AI_TEAM_CONNECTION_OK")
-    except Exception as exc:
-        print(f"CONNECTION_FAILED: {exc}", file=sys.stderr)
+    failures = []
+
+    # Run both providers independently: one provider's quota/auth error must
+    # never prevent checking the other provider.
+    for provider, check in (("OPENAI", openai_check), ("GEMINI", gemini_check)):
+        try:
+            model = check()
+            print(f"{provider}_OK model={model}")
+        except Exception as exc:
+            message = safe_error(exc)
+            failures.append(provider)
+            print(f"{provider}_FAILED: {message}", file=sys.stderr)
+
+    if failures:
+        print("CONNECTION_FAILED providers=" + ",".join(failures), file=sys.stderr)
         sys.exit(1)
+
+    print("RESET_NIGHT_AI_TEAM_CONNECTION_OK")
 
 if __name__ == "__main__":
     main()
