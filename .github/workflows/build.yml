@@ -32,17 +32,21 @@ jobs:
           cat > capacitor.config.json <<'EOF_CFG'
           {
             "appId": "com.arinma.gecesi",
-            "appName": "Arınma Gecesi",
+            "appName": "Reset Night",
             "webDir": "www"
           }
           EOF_CFG
+          cat > www/icon.svg <<'EOF_ICON'
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512"><defs><linearGradient id="m0" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f4efe4"/><stop offset="1" stop-color="#b9b3a7"/></linearGradient><linearGradient id="m1" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#cfc9bd"/><stop offset="1" stop-color="#8f8a80"/></linearGradient><linearGradient id="m2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#9b968c"/><stop offset="1" stop-color="#625e58"/></linearGradient><linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#05070e"/><stop offset=".62" stop-color="#2a0c18"/><stop offset="1" stop-color="#0b0509"/></linearGradient><radialGradient id="gl" cx="256" cy="250" r="270" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#e0283a" stop-opacity=".75"/><stop offset="1" stop-color="#e0283a" stop-opacity="0"/></radialGradient><radialGradient id="sb" cx="512" cy="0" r="260" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#4a86c7" stop-opacity=".7"/><stop offset="1" stop-color="#4a86c7" stop-opacity="0"/></radialGradient><radialGradient id="sr" cx="0" cy="0" r="200" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#e0283a" stop-opacity=".5"/><stop offset="1" stop-color="#e0283a" stop-opacity="0"/></radialGradient><radialGradient id="vg" cx="256" cy="256" r="370" gradientUnits="userSpaceOnUse"><stop offset=".55" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".6"/></radialGradient></defs><rect width="512" height="512" fill="url(#sky)"/><rect width="512" height="512" fill="url(#gl)"/><rect width="512" height="512" fill="url(#sb)"/><rect width="512" height="512" fill="url(#sr)"/><circle cx="256" cy="215" r="120" fill="#e0283a" fill-opacity=".22"/><path d="M0 330L40 330L40 290L90 290L90 320L130 320L130 270L170 270L170 330L350 330L350 262L400 262L400 300L440 300L440 280L480 280L480 330L512 330L512 512L0 512Z" fill="#04060b"/><g transform="translate(150 196) scale(0.6)"><path d="M-178 420C-178 250 -130 176 -62 148C-36 138 -26 128 0 128C26 128 36 138 62 148C130 176 178 250 178 420Z" fill="#040509" stroke="#d1202f" stroke-opacity=".55" stroke-width="4"/><ellipse cx="0" cy="0" rx="92" ry="114" fill="#040509" stroke="#d1202f" stroke-opacity=".6" stroke-width="4"/><ellipse cx="0" cy="8" rx="70" ry="94" fill="#000"/><path d="M0 -68C42 -68 58 -30 55 12C52 52 30 86 0 88C-30 86 -52 52 -55 12C-58 -30 -42 -68 0 -68Z" fill="url(#m2)" stroke="#1b1614" stroke-width="2.5"/><path d="M-40 -16Q-22 -30 -6 -8Q-24 0 -40 -16Z" fill="#05070d"/><path d="M40 -16Q22 -30 6 -8Q24 0 40 -16Z" fill="#05070d"/><path d="M0 -4L-5 22L4 24" stroke="#14100f" stroke-opacity=".45" stroke-width="2.5" fill="none" stroke-linecap="round"/><path d="M-30 42Q0 78 30 42" stroke="#14100f" stroke-width="5" fill="none" stroke-linecap="round"/><path d="M-14 56L-14 66M0 59L0 70M14 56L14 66" stroke="#14100f" stroke-width="3" stroke-linecap="round"/></g><g transform="translate(362 196) scale(0.6)"><path d="M-178 420C-178 250 -130 176 -62 148C-36 138 -26 128 0 128C26 128 36 138 62 148C130 176 178 250 178 420Z" fill="#040509" stroke="#d1202f" stroke-opacity=".55" stroke-width="4"/><ellipse cx="0" cy="0" rx="92" ry="114" fill="#040509" stroke="#d1202f" stroke-opacity=".6" stroke-width="4"/><ellipse cx="0" cy="8" rx="70" ry="94" fill="#000"/><path d="M0 -68C42 -68 58 -30 55 12C52 52 30 86 0 88C-30 86 -52 52 -55 12C-58 -30 -42 -68 0 -68Z" fill="url(#m2)" stroke="#1b1614" stroke-width="2.5"/><path d="M-40 -16Q-22 -30 -6 -8Q-24 0 -40 -16Z" fill="#05070d"/><path d="M40 -16Q22 -30 6 -8Q24 0 40 -16Z" fill="#05070d"/><path d="M0 -4L-5 22L4 24" stroke="#14100f" stroke-opacity=".45" stroke-width="2.5" fill="none" stroke-linecap="round"/><path d="M24 4L24 44M33 6L33 38" stroke="#d1202f" stroke-width="4" stroke-linecap="round"/><path d="M-12 58Q0 52 12 58" stroke="#14100f" stroke-width="4" fill="none" stroke-linecap="round"/></g><g transform="translate(96 300) scale(0.78)"><path d="M-178 420C-178 250 -130 176 -62 148C-36 138 -26 128 0 128C26 128 36 138 62 148C130 176 178 250 178 420Z" fill="#05070b" stroke="#d1202f" stroke-opacity=".55" stroke-width="4"/><ellipse cx="0" cy="0" rx="92" ry="114" fill="#05070b" stroke="#d1202f" stroke-opacity=".6" stroke-width="4"/><ellipse cx="0" cy="8" rx="70" ry="94" fill="#000"/><path d="M0 -68C42 -68 58 -30 55 12C52 52 30 86 0 88C-30 86 -52 52 -55 12C-58 -30 -42 -68 0 -68Z" fill="url(#m1)" stroke="#1b1614" stroke-width="2.5"/><path d="M-40 -16Q-22 -30 -6 -8Q-24 0 -40 -16Z" fill="#05070d"/><path d="M40 -16Q22 -30 6 -8Q24 0 40 -16Z" fill="#05070d"/><path d="M0 -4L-5 22L4 24" stroke="#14100f" stroke-opacity=".45" stroke-width="2.5" fill="none" stroke-linecap="round"/><path d="M-44 22L-22 46M-22 22L-44 46" stroke="#d1202f" stroke-width="6" stroke-linecap="round"/><path d="M-14 56L14 56" stroke="#14100f" stroke-width="4" stroke-linecap="round"/></g><g transform="translate(416 300) scale(0.78)"><path d="M-178 420C-178 250 -130 176 -62 148C-36 138 -26 128 0 128C26 128 36 138 62 148C130 176 178 250 178 420Z" fill="#05070b" stroke="#d1202f" stroke-opacity=".55" stroke-width="4"/><ellipse cx="0" cy="0" rx="92" ry="114" fill="#05070b" stroke="#d1202f" stroke-opacity=".6" stroke-width="4"/><ellipse cx="0" cy="8" rx="70" ry="94" fill="#000"/><path d="M0 -68C42 -68 58 -30 55 12C52 52 30 86 0 88C-30 86 -52 52 -55 12C-58 -30 -42 -68 0 -68Z" fill="url(#m1)" stroke="#1b1614" stroke-width="2.5"/><path d="M-40 -16Q-22 -30 -6 -8Q-24 0 -40 -16Z" fill="#05070d"/><path d="M40 -16Q22 -30 6 -8Q24 0 40 -16Z" fill="#05070d"/><path d="M0 -4L-5 22L4 24" stroke="#14100f" stroke-opacity=".45" stroke-width="2.5" fill="none" stroke-linecap="round"/><rect x="-50" y="-46" width="100" height="9" fill="#d1202f" transform="rotate(-4)"/><path d="M-14 56L14 56" stroke="#14100f" stroke-width="4" stroke-linecap="round"/></g><g transform="translate(256 262) scale(1)"><path d="M-178 420C-178 250 -130 176 -62 148C-36 138 -26 128 0 128C26 128 36 138 62 148C130 176 178 250 178 420Z" fill="#07090f" stroke="#d1202f" stroke-opacity=".55" stroke-width="4"/><ellipse cx="0" cy="0" rx="92" ry="114" fill="#07090f" stroke="#d1202f" stroke-opacity=".6" stroke-width="4"/><ellipse cx="0" cy="8" rx="70" ry="94" fill="#000"/><path d="M0 -68C42 -68 58 -30 55 12C52 52 30 86 0 88C-30 86 -52 52 -55 12C-58 -30 -42 -68 0 -68Z" fill="url(#m0)" stroke="#1b1614" stroke-width="2.5"/><path d="M-40 -16Q-22 -30 -6 -8Q-24 0 -40 -16Z" fill="#05070d"/><path d="M40 -16Q22 -30 6 -8Q24 0 40 -16Z" fill="#05070d"/><path d="M0 -4L-5 22L4 24" stroke="#14100f" stroke-opacity=".45" stroke-width="2.5" fill="none" stroke-linecap="round"/><path d="M0 -68L0 -22" stroke="#d1202f" stroke-width="8" stroke-linecap="round"/><path d="M-24 54L24 54M-16 47L-16 61M-5 47L-5 61M5 47L5 61M16 47L16 61" stroke="#14100f" stroke-width="3.5" stroke-linecap="round"/></g><rect width="512" height="512" fill="url(#vg)"/></svg>
+          EOF_ICON
           cat > www/index.html <<'EOF_HTML'
           <!DOCTYPE html>
           <html lang="tr">
           <head>
           <meta charset="utf-8">
           <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-          <title>Arınma Gecesi</title>
+          <title>Reset Night</title>
+          <link rel="icon" href="icon.png">
           <style>
           html,body{margin:0;height:100%;background:#05070d;color:#ece8e1;font-family:"Arial Narrow",Arial,sans-serif;overflow:hidden;touch-action:manipulation;user-select:none;-webkit-user-select:none}
           #wrap{position:fixed;inset:0;display:flex;align-items:center;justify-content:center}
@@ -65,12 +69,12 @@ jobs:
           <div id="wrap"><canvas id="c"></canvas></div>
           <div id="ui">
           <div id="intro">
-          <h1>ARINMA GECESİ</h1>
+          <img src="logo.jpg" alt="" style="width:100%;max-width:320px;border-radius:14px" onerror="this.onerror=null;this.src='icon.svg';this.style.width='132px'">
           <div class="box"><b style="color:#d1202f">ULUSAL ACİL DURUM YAYINI</b><br>Bu bir tatbikat değildir.<br><br>Bu gece saat 19:00’dan sabah 07:00’ya kadar her türlü suç serbesttir. Polis, itfaiye ve ambulans hizmet vermeyecektir.<br><br>Başlangıç sireniyle gece açılır, bitiş sireniyle kapanır. Kapılarınızı sağlamlaştırın, ışıkları kısın.<br><br>Sabaha sağ çıkanlara iyi şanslar.</div>
           <button class="go" id="bStart">Devam</button>
           </div>
           <div id="menu" class="hide">
-          <h1>ARINMA GECESİ</h1>
+          <h1>RESET NIGHT</h1>
           <p>Siren 19:00’da çalar, sabah 07:00’da biter. Savunan sabaha dayanır, saldıran içeri girer.</p>
           <div><button class="s on" id="bD">Savun</button> <button class="s" id="bA">Saldır</button></div>
           <button class="go" id="bSolo">Tek kişilik</button>
@@ -251,6 +255,31 @@ jobs:
           EOF_HTML
       - run: npm install
       - run: npx cap add android
+      - name: Logo ve ikonlari olustur
+        run: |
+          L=$(ls -1 *.jpg *.jpeg *.png *.webp 2>/dev/null | head -n 1)
+          command -v convert >/dev/null || sudo apt-get install -y -qq imagemagick
+          sudo apt-get install -y -qq librsvg2-bin
+          if [ -n "$L" ]; then
+            W=$(identify -format %w "$L"); H=$(identify -format %h "$L")
+            CW=$((H*112/100)); [ $CW -gt $W ] && CW=$W
+            [ $CW -lt $H ] && CW=$H
+            convert "$L" -resize 1024x -quality 88 www/logo.jpg
+            convert "$L" -gravity center -crop ${CW}x${H}+0+0 +repage -background black -gravity center -extent ${CW}x${CW} -resize 512x512 icon.png
+          else
+            rsvg-convert -w 512 -h 512 www/icon.svg -o icon.png
+          fi
+          cp icon.png www/icon.png
+          for d in mdpi:48:108 hdpi:72:162 xhdpi:96:216 xxhdpi:144:324 xxxhdpi:192:432; do
+            IFS=: read n s f <<< "$d"
+            m=android/app/src/main/res/mipmap-$n
+            mkdir -p $m
+            convert icon.png -resize ${s}x${s} $m/ic_launcher.png
+            cp $m/ic_launcher.png $m/ic_launcher_round.png
+            q=$((f*60/100))
+            convert icon.png -resize ${q}x${q} -background black -gravity center -extent ${f}x${f} $m/ic_launcher_foreground.png
+          done
+          sed -i 's/>#[0-9A-Fa-f]*</>#000000</' android/app/src/main/res/values/ic_launcher_background.xml || true
       - run: sed -i 's/android:name=".MainActivity"/& android:screenOrientation="portrait"/' android/app/src/main/AndroidManifest.xml
       - run: npx cap sync android
       - run: chmod +x android/gradlew && cd android && ./gradlew assembleDebug
