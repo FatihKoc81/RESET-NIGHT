@@ -53,6 +53,7 @@ func _build_ground() -> void:
 func _build_street_props() -> void:
     _car_wreck(Vector3(-8, 0, -7), -0.12)
     _car_wreck(Vector3(11, 0, -9), 0.18)
+    _abandoned_house(Vector3(25, 0, -18))
     _street_lamp(Vector3(-15, 0, -13))
     _street_lamp(Vector3(17, 0, -13))
     _street_lamp(Vector3(-18, 0, 8))
@@ -190,3 +191,24 @@ func _fence(pos: Vector3, length: float) -> void:
         _cylinder(root, Vector3(float(i) * 2.0, 1.25, 0), 0.055, 2.5, metal, true)
     _box(root, Vector3(length * 0.5, 0.25, 0), Vector3(length, 0.07, 0.07), metal, false)
     _box(root, Vector3(length * 0.5, 2.35, 0), Vector3(length, 0.07, 0.07), metal, false)
+
+func _abandoned_house(pos: Vector3) -> void:
+    # Simple ruined house shell with a doorway, boarded windows and blocked interior.
+    var root := StaticBody3D.new()
+    root.position = pos
+    $NavigationRegion3D/EnvironmentProps3D.add_child(root)
+    _add_box_mesh(root, Vector3(0, 0.12, 0), Vector3(11.0, 0.24, 8.0), concrete, true)
+    # Rear and side walls.
+    _add_box_mesh(root, Vector3(0, 1.65, -3.85), Vector3(11.0, 3.3, 0.3), brick, true)
+    _add_box_mesh(root, Vector3(-5.35, 1.65, 0), Vector3(0.3, 3.3, 7.7), brick, true)
+    _add_box_mesh(root, Vector3(5.35, 1.65, 0), Vector3(0.3, 3.3, 7.7), brick, true)
+    # Front wall is split to leave a narrow entrance.
+    _add_box_mesh(root, Vector3(-3.75, 1.65, 3.85), Vector3(3.2, 3.3, 0.3), brick, true)
+    _add_box_mesh(root, Vector3(3.75, 1.65, 3.85), Vector3(3.2, 3.3, 0.3), brick, true)
+    _add_box_mesh(root, Vector3(0, 3.05, 3.85), Vector3(4.3, 0.5, 0.3), brick, true)
+    # Interior partition and boards make the house read as abandoned/barricaded.
+    _add_box_mesh(root, Vector3(0, 1.25, -1.0), Vector3(0.25, 2.5, 4.8), concrete, true)
+    _add_box_mesh(root, Vector3(-5.12, 2.0, -1.2), Vector3(0.12, 0.18, 2.0), metal, true)
+    _add_box_mesh(root, Vector3(5.12, 2.0, -1.2), Vector3(0.12, 0.18, 2.0), metal, true)
+    # Flat damaged roof slab.
+    _add_box_mesh(root, Vector3(0, 3.35, 0), Vector3(11.4, 0.28, 8.4), concrete, true)
