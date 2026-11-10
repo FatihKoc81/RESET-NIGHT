@@ -54,8 +54,11 @@ jobs:
             cp android/app/src/main/res/mipmap-$1/ic_launcher.png android/app/src/main/res/mipmap-$1/ic_launcher_round.png
           done
           sed -i 's/android:label="[^"]*"/android:label="RESET NIGHT"/' android/app/src/main/AndroidManifest.xml
-          sed -i 's/versionCode 2/versionCode 3/' android/app/build.gradle
-          sed -i 's/versionName "1.1.0"/versionName "1.2.0"/' android/app/build.gradle
+          # Always raise versionCode, regardless of the template's starting value.
+          sed -i -E 's/versionCode[[:space:]]+[0-9]+/versionCode 4/' android/app/build.gradle
+          sed -i -E 's/versionName[[:space:]]+"[^"]+"/versionName "1.3.0"/' android/app/build.gradle
+          echo "Configured Android package/version:"
+          grep -E 'applicationId|versionCode|versionName' android/app/build.gradle
       - name: Sync Capacitor
         run: npx cap sync android
       - name: Build APK
@@ -71,7 +74,11 @@ jobs:
           test -s "$APK"
           BUILD_TOOLS="$ANDROID_HOME/build-tools/$(ls "$ANDROID_HOME/build-tools" | sort -V | tail -n1)"
           "$BUILD_TOOLS/apksigner" verify --verbose "$APK"
-          "$BUILD_TOOLS/aapt" dump badging "$APK" | head -n 5
+          BADGING="$("$BUILD_TOOLS/aapt" dump badging "$APK")"
+          echo "$BADGING" | head -n 8
+          echo "$BADGING" | grep -q "package: name='com.resetnight.game'"
+          echo "$BADGING" | grep -q "versionCode='4'"
+          "$BUILD_TOOLS/zipalign" -c -v 4 "$APK"
       - name: Publish direct APK release
         uses: softprops/action-gh-release@v2
         with:
