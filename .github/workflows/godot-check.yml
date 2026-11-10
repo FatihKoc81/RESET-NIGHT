@@ -1,0 +1,28 @@
+name: RESET NIGHT Godot validation
+on:
+  push:
+    branches: [ godot-foundation ]
+    paths:
+      - 'godot/**'
+      - '.github/workflows/godot-check.yml'
+  workflow_dispatch:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Prepare official logo asset
+        run: |
+          mkdir -p godot/assets
+          cp IMG-20261110-WA0002.jpg godot/assets/reset_night_logo.jpg
+      - name: Set up Godot 4
+        uses: chickensoft-games/setup-godot@v1
+        with:
+          version: 4.3.0
+          use-dotnet: false
+      - name: Import and validate project
+        run: godot --headless --path godot --editor --quit
+      - name: Run project startup smoke test
+        run: timeout 15s godot --headless --path godot --quit-after 3
