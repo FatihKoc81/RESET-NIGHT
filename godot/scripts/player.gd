@@ -58,7 +58,7 @@ func _physics_process(delta: float) -> void:
             shotgun_ammo += amount
             shotgun_reserve -= amount
             _notify("Pompalı dolduruldu")
-    var input := Input.get_vector("move_left", "move_right", "move_forward", "move_back")
+    var input := Input.get_vector("move_left", "move_right", "move_forward", "move_back")\n    var mobile_input := get_node_or_null("/root/MobileInputManager")\n    if OS.has_feature("mobile") and is_instance_valid(mobile_input) and mobile_input.move_vector.length() > 0.01:\n        input = mobile_input.move_vector
     var direction := (global_transform.basis * Vector3(input.x, 0, input.y)).normalized()
     if input.length() > 0.08:
         velocity.x = direction.x * move_speed

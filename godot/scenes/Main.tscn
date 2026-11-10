@@ -1,10 +1,10 @@
-[gd_scene load_steps=6 format=3]
+[gd_scene load_steps=7 format=3]
 
 [ext_resource type="PackedScene" path="res://scenes/Player.tscn" id="1_player"]
 [ext_resource type="Script" path="res://scripts/enemy_spawner.gd" id="2_spawner"]
 [ext_resource type="Script" path="res://scripts/hud.gd" id="3_hud"]
 [ext_resource type="Script" path="res://scripts/barricade_spawner.gd" id="4_barricades"]
-[ext_resource type="PackedScene" path="res://scenes/maps/MapBase.tscn" id="5_map"]
+[ext_resource type="PackedScene" path="res://scenes/maps/MapBase.tscn" id="5_map"]\n[ext_resource type="PackedScene" path="res://scenes/ui/MobileControls.tscn" id="6_mobile"]
 
 [node name="Main" type="Node3D"]
 [node name="MapBase" parent="." instance=ExtResource("5_map")]
@@ -16,3 +16,4 @@ script = ExtResource("2_spawner")
 script = ExtResource("4_barricades")
 [node name="HUD" type="CanvasLayer" parent="."]
 script = ExtResource("3_hud")
+[node name="MobileControls" parent="HUD" instance=ExtResource("6_mobile")]\n

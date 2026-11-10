@@ -16,7 +16,7 @@ func _ready() -> void:
     _build_ground()
     _build_street_props()
     _build_walls_and_fences()
-    _build_loot_containers()
+    _build_loot_containers()\n    _apply_mobile_visibility_ranges()
 
 func _make_materials() -> void:
     asphalt = _mat(Color(0.055, 0.063, 0.073), 0.95)
@@ -226,3 +226,12 @@ func _spawn_loot(pos: Vector3, label: String) -> void:
     container.position = pos
     container.container_label = label
     $NavigationRegion3D/EnvironmentProps3D.add_child(container)
+
+func _apply_mobile_visibility_ranges() -> void:
+    # Distance culling for procedural environment meshes; no imported LOD assets exist yet.
+    var props := $NavigationRegion3D/EnvironmentProps3D
+    for node in props.find_children("*", "MeshInstance3D", true, false):
+        var mesh_instance := node as MeshInstance3D
+        mesh_instance.visibility_range_end = 70.0
+        mesh_instance.visibility_range_end_margin = 10.0
+        mesh_instance.visibility_range_fade_mode = GeometryInstance3D.VISIBILITY_RANGE_FADE_SELF

@@ -67,6 +67,43 @@ func _load_game() -> void:
     elif is_instance_valid(player):
         player._notify("Kayıt dosyası bulunamadı")
 
+
+func _build_settings_controls(root: Control) -> void:
+    settings_button = Button.new()
+    settings_button.text = "AYARLAR"
+    settings_button.position = Vector2(22, 160)
+    settings_button.size = Vector2(118, 44)
+    settings_button.pressed.connect(_toggle_settings)
+    root.add_child(settings_button)
+    settings_panel = PanelContainer.new()
+    settings_panel.position = Vector2(22, 212)
+    settings_panel.size = Vector2(280, 100)
+    settings_panel.visible = false
+    root.add_child(settings_panel)
+    var column := VBoxContainer.new()
+    settings_panel.add_child(column)
+    var title := Label.new()
+    title.text = "KAMERA HASSASİYETİ"
+    column.add_child(title)
+    sensitivity_slider = HSlider.new()
+    sensitivity_slider.min_value = 0.001
+    sensitivity_slider.max_value = 0.015
+    sensitivity_slider.step = 0.001
+    sensitivity_slider.value = 0.005
+    var manager := get_node_or_null("/root/MobileInputManager")
+    if is_instance_valid(manager):
+        sensitivity_slider.value = manager.touch_sensitivity
+    sensitivity_slider.value_changed.connect(_on_sensitivity_changed)
+    column.add_child(sensitivity_slider)
+
+func _toggle_settings() -> void:
+    settings_panel.visible = not settings_panel.visible
+
+func _on_sensitivity_changed(value: float) -> void:
+    var manager := get_node_or_null("/root/MobileInputManager")
+    if is_instance_valid(manager):
+        manager.set_touch_sensitivity(value)
+
 func _build_inventory_panel(root: Control) -> void:
     inventory_button = Button.new()
     inventory_button.text = "ÇANTA (I)"
@@ -136,35 +173,6 @@ func _call_player(method_name: String) -> void:
     if is_instance_valid(player) and player.has_method(method_name):
         player.call(method_name)
 
-func _on_root_input(event: InputEvent) -> void:
-    if event is InputEventScreenTouch:
-        if event.pressed and event.position.x < get_viewport().get_visible_rect().size.x * 0.48 and event.position.y > get_viewport().get_visible_rect().size.y * 0.45:
-            joystick_touch = event.index
-            joystick_origin = event.position
-            _update_joystick(event.position)
-        elif not event.pressed and event.index == joystick_touch:
-            joystick_touch = -1
-            joystick_vector = Vector2.ZERO
-            _set_move_actions(Vector2.ZERO)
-    elif event is InputEventScreenDrag and event.index == joystick_touch:
-        _update_joystick(event.position)
-
-func _update_joystick(position: Vector2) -> void:
-    joystick_vector = (position - joystick_origin).limit_length(75.0) / 75.0
-    _set_move_actions(joystick_vector)
-
-func _set_move_actions(value: Vector2) -> void:
-    _set_action("move_left", value.x < -0.22)
-    _set_action("move_right", value.x > 0.22)
-    _set_action("move_forward", value.y < -0.22)
-    _set_action("move_back", value.y > 0.22)
-
-func _set_action(action: String, pressed: bool) -> void:
-    if pressed and not Input.is_action_pressed(action):
-        Input.action_press(action)
-    elif not pressed and Input.is_action_pressed(action):
-        Input.action_release(action)
-
 func set_health(value: float, _maximum: float) -> void:
     if is_instance_valid(health_label):
         health_label.text = "SAĞLIK %d" % int(value)
@@ -183,4 +191,4 @@ func _process(_delta: float) -> void:
     if not is_instance_valid(player):
         player = get_tree().get_first_node_in_group("player")
     if is_instance_valid(player) and is_instance_valid(ammo_label):
-        ammo_label.text = "POMPALI %d / %d  •  MOLOTOF %d" % [player.shotgun_ammo, player.shotgun_reserve, player.molotov_count]
+        ammo_label.text = "POMPALI %d / %d  •  MOLOTOF %d" % [player.shotgun_ammo, player.shotgun_reserve, int(player.get_node("InventoryManager").inventory.get("molotov", 0))]
