@@ -20,6 +20,17 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Install Java and Android SDK prerequisites
+        shell: bash
+        run: |
+          apt-get update
+          apt-get install -y openjdk-17-jdk curl unzip
+          export JAVA_HOME="$(dirname "$(dirname "$(readlink -f "$(command -v java)")")")"
+          echo "JAVA_HOME=$JAVA_HOME" >> "$GITHUB_ENV"
+          echo "ANDROID_HOME=${ANDROID_HOME:-/opt/android-sdk}" >> "$GITHUB_ENV"
+          echo "ANDROID_SDK_ROOT=${ANDROID_HOME:-/opt/android-sdk}" >> "$GITHUB_ENV"
+          ls -la "${ANDROID_HOME:-/opt/android-sdk}"
+
       - name: Restore stable Godot debug signing key
         uses: actions/cache@v4
         with:
@@ -62,7 +73,7 @@ jobs:
         with:
           tag_name: godot-android-latest
           name: RESET NIGHT Godot 3D Android
-          body: "Godot 4.3 native 3D Android APK. Package: com.fatihkoc.resetnight. Version 1.4.2 (7)."
+          body: "Godot 4.3 native 3D Android APK. Package: com.fatihkoc.resetnight.godot3d. Version 1.4.3 (8)."
           files: RESET-NIGHT-GODOT-Android.apk
           make_latest: false
           fail_on_unmatched_files: true

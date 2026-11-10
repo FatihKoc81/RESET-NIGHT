@@ -251,7 +251,7 @@ func _show_settings() -> void:
 func _set_master_volume(value: float) -> void:
     var bus := AudioServer.get_bus_index("Master")
     if bus >= 0:
-        AudioServer.set_bus_volume_linear(bus, value)
+        AudioServer.set_bus_volume_db(bus, linear_to_db(maxf(value, 0.0001)))
     _settings.set_value("audio", "master", value)
     _settings.save("user://settings.cfg")
 
