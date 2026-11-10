@@ -1,6 +1,6 @@
 extends Control
 
-const GAME_SCENE := "res://scenes/Main.tscn"
+const GAME_SCENE := "res://scenes/Main3D.tscn"
 const BUILDER = preload("res://scripts/ui_asset_builder.gd")
 
 var _continue_button: Button
