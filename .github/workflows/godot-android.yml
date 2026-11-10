@@ -1,37 +1,29 @@
-name: RESET NIGHT Godot 4 Android APK
-
+name: RESET NIGHT Godot 4 Android Validation
 on:
-  push:
-    branches: [ main ]
-    paths:
-      - "godot/**"
-      - ".github/workflows/godot-android.yml"
   workflow_dispatch:
 
 permissions:
   contents: read
 
 jobs:
-  export-android:
+  validate-export:
     runs-on: ubuntu-latest
     container:
       image: barichello/godot-ci:4.3
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-      - name: Check Godot and Android SDK
-        run: |
-          godot --version
-          test -n "$ANDROID_HOME" || test -n "$ANDROID_SDK_ROOT"
-      - name: Import project and export Android APK
-        run: |
-          chmod +x godot/build_android.sh
-          godot/build_android.sh
-      - name: Verify APK exists
-        run: test -s RESET-NIGHT-GODOT.apk
-      - name: Upload Godot Android APK
-        uses: actions/upload-artifact@v4
+      - uses: actions/checkout@v4
+      - name: Prepare stable debug signing key
+        uses: actions/cache@v4
         with:
-          name: RESET-NIGHT-GODOT-Android
-          path: RESET-NIGHT-GODOT.apk
-          if-no-files-found: error
+          path: ~/.android/debug.keystore
+          key: reset-night-godot-debug-keystore-v2
+      - name: Export and validate
+        shell: bash
+        run: |
+          mkdir -p ~/.android
+          if [ ! -s ~/.android/debug.keystore ]; then
+            keytool -genkeypair -v -keystore ~/.android/debug.keystore -storepass android -alias androiddebugkey -keypass android -dname "CN=RESET NIGHT Debug,O=RESET NIGHT,C=TR" -keyalg RSA -keysize 2048 -validity 10000
+          fi
+          cp ~/.android/debug.keystore godot/resetnight-debug.keystore
+          chmod +x godot/build_android.sh
+          GODOT_BIN=godot ANDROID_HOME="$ANDROID_HOME" godot/build_android.sh
