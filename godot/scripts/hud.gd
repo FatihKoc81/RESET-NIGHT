@@ -13,20 +13,19 @@ func _ready() -> void:
     player = get_tree().get_first_node_in_group("player")
     var root := Control.new()
     root.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+    root.mouse_filter = Control.MOUSE_FILTER_PASS
     add_child(root)
     health_label = _label(root, "SAĞLIK 100", Vector2(22, 18), Vector2(220, 54), 22)
     ammo_label = _label(root, "POMPALI 2 / 20  •  MOLOTOF 3", Vector2(22, 54), Vector2(360, 42), 15)
-    message_label = _label(root, "GECEYE HAZIR OL", Vector2(0, 18), Vector2(600, 48), 20)
+    message_label = _label(root, "RESET NIGHT", Vector2(0, 18), Vector2(600, 48), 20)
     message_label.anchor_left = 0.5
     message_label.anchor_right = 0.5
     message_label.position.x = -300
-    _make_action(root, "SOPA", Vector2(-250, -145), "attack")
+    _make_action(root, "SOPA", Vector2(-250, -145), "use_bat")
     _make_action(root, "MOLOTOF", Vector2(-155, -145), "throw_molotov")
     _make_action(root, "POMPALI", Vector2(-250, -65), "fire_shotgun")
-    _make_action(root, "DOLDUR", Vector2(-155, -65), "reload")
+    _make_action(root, "DOLDUR", Vector2(-155, -65), "reload_shotgun")
     root.gui_input.connect(_on_root_input)
-    root.mouse_filter = Control.MOUSE_FILTER_STOP
-    root.draw.connect(func(): pass)
 
 func _label(parent: Control, text_value: String, pos: Vector2, size: Vector2, font_size: int) -> Label:
     var label := Label.new()
@@ -38,7 +37,7 @@ func _label(parent: Control, text_value: String, pos: Vector2, size: Vector2, fo
     parent.add_child(label)
     return label
 
-func _make_action(parent: Control, title: String, offset: Vector2, action: String) -> void:
+func _make_action(parent: Control, title: String, offset: Vector2, method_name: String) -> void:
     var button := Button.new()
     button.text = title
     button.size = Vector2(86, 62)
@@ -49,8 +48,12 @@ func _make_action(parent: Control, title: String, offset: Vector2, action: Strin
     button.position = offset
     button.add_theme_font_size_override("font_size", 13)
     button.add_theme_color_override("font_color", Color.WHITE)
-    button.pressed.connect(func(): Input.action_press(action); Input.action_release(action))
+    button.pressed.connect(_call_player.bind(method_name))
     parent.add_child(button)
+
+func _call_player(method_name: String) -> void:
+    if is_instance_valid(player) and player.has_method(method_name):
+        player.call(method_name)
 
 func _on_root_input(event: InputEvent) -> void:
     if event is InputEventScreenTouch:
@@ -81,7 +84,7 @@ func _set_action(action: String, pressed: bool) -> void:
     elif not pressed and Input.is_action_pressed(action):
         Input.action_release(action)
 
-func set_health(value: float, maximum: float) -> void:
+func set_health(value: float, _maximum: float) -> void:
     if is_instance_valid(health_label):
         health_label.text = "SAĞLIK %d" % int(value)
 

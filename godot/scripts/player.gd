@@ -19,14 +19,18 @@ var invulnerable := 0.0
 var yaw := 0.0
 var hud: Node
 
-@onready var pivot: Marker3D = $WeaponPivot
 @onready var camera: Camera3D = $SpringArm3D/Camera3D
 
 func _ready() -> void:
     add_to_group("player")
     health = max_health
-    hud = get_tree().get_first_node_in_group("hud")
+    call_deferred("_find_hud")
     Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+
+func _find_hud() -> void:
+    hud = get_tree().get_first_node_in_group("hud")
+    if hud:
+        hud.set_health(health, max_health)
 
 func _unhandled_input(event: InputEvent) -> void:
     if event is InputEventMouseMotion and not OS.has_feature("mobile"):
@@ -77,7 +81,7 @@ func use_bat() -> void:
         target.take_damage(BAT_DAMAGE)
         if randf() < STUN_CHANCE:
             target.stun(1.0)
-    _notify("Sopa savruldu")
+    _notify("Çivili sopa: 25 hasar")
 
 func throw_molotov() -> void:
     if molotov_count <= 0:
@@ -121,11 +125,12 @@ func take_damage(amount: float) -> void:
         return
     health = maxf(0.0, health - amount)
     invulnerable = 0.65
-    if hud:
+    if not is_instance_valid(hud):
+        _find_hud()
+    if is_instance_valid(hud):
         hud.set_health(health, max_health)
     if health <= 0.0:
-        _notify("GECE KAZANDI — yeniden başlat")
-        get_tree().paused = true
+        _notify("GECE KAZANDI — karakter düştü")
 
 func _nearest_enemy(max_range: float) -> Node:
     var nearest: Node
@@ -138,5 +143,7 @@ func _nearest_enemy(max_range: float) -> Node:
     return nearest
 
 func _notify(message: String) -> void:
-    if hud:
+    if not is_instance_valid(hud):
+        _find_hud()
+    if is_instance_valid(hud):
         hud.show_message(message)
