@@ -5,7 +5,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   build:
@@ -22,14 +22,27 @@ jobs:
         with:
           distribution: temurin
           java-version: '17'
+      - name: Install ImageMagick
+        run: sudo apt-get update && sudo apt-get install -y imagemagick
       - name: Install dependencies
         run: npm install
-      - name: Prepare logo
+      - name: Prepare game logo and Android launcher icons
         run: |
           mkdir -p www
           cp IMG-20261110-WA0002.jpg www/logo.jpg
       - name: Add Android platform
         run: npx cap add android
+      - name: Apply RESET NIGHT app identity and icon
+        run: |
+          for spec in "mdpi 48" "hdpi 72" "xhdpi 96" "xxhdpi 144" "xxxhdpi 192"; do
+            set -- $spec
+            mkdir -p android/app/src/main/res/mipmap-$1
+            convert IMG-20261110-WA0002.jpg -auto-orient -resize $2x$2^ -gravity center -extent $2x$2 -background "#080b12" android/app/src/main/res/mipmap-$1/ic_launcher.png
+            cp android/app/src/main/res/mipmap-$1/ic_launcher.png android/app/src/main/res/mipmap-$1/ic_launcher_round.png
+          done
+          sed -i 's/android:label="[^"]*"/android:label="RESET NIGHT"/' android/app/src/main/AndroidManifest.xml
+          sed -i 's/versionCode 1/versionCode 2/' android/app/build.gradle
+          sed -i 's/versionName "1.0"/versionName "1.1.0"/' android/app/build.gradle
       - name: Sync Capacitor
         run: npx cap sync android
       - name: Build APK
@@ -37,9 +50,20 @@ jobs:
           cd android
           chmod +x gradlew
           ./gradlew assembleDebug --stacktrace
-      - name: Upload APK
+      - name: Rename APK for direct download
+        run: cp android/app/build/outputs/apk/debug/app-debug.apk RESET-NIGHT.apk
+      - name: Publish direct APK release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: mobile-latest
+          name: RESET NIGHT Android
+          body: "RESET NIGHT Android APK. Download RESET-NIGHT.apk directly."
+          files: RESET-NIGHT.apk
+          make_latest: true
+          fail_on_unmatched_files: true
+      - name: Upload backup build artifact
         uses: actions/upload-artifact@v4
         with:
-          name: RESET-NIGHT
-          path: android/app/build/outputs/apk/debug/app-debug.apk
+          name: RESET-NIGHT-backup
+          path: RESET-NIGHT.apk
           if-no-files-found: error
