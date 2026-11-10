@@ -116,7 +116,9 @@ def gpt_review(original, proposed):
         "or uncertainty requiring a human. Return ONLY JSON: "
         "{\"approved\":true|false,\"summary\":\"concise Turkish explanation\","
         "\"issues\":[\"specific actionable feedback for the implementer\"]}. "
-        "Be conservative. Approval means suitable to run validation, not guaranteed bug-free.\n\n"
+        "Be conservative. Approval means suitable to run validation, not guaranteed bug-free. " +
+        "Keep the summary under 2 sentences and return at most 3 short issues. " +
+        "Do not repeat the task or quote large code blocks.\n\n"
         "TASK:\n" + TASK + "\n\nORIGINAL FILE:\n" + original +
         "\n\nPROPOSED FILE:\n" + proposed
     )
