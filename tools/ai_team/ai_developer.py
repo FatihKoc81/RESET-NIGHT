@@ -126,7 +126,7 @@ def gpt_review(original, proposed):
         "https://api.openai.com/v1/responses",
         {"Authorization": "Bearer " + os.environ["OPENAI_API_KEY"],
          "Content-Type": "application/json"},
-        {"model": model, "input": prompt, "max_output_tokens": 1800,
+        {"model": model, "input": prompt, "max_output_tokens": 5000,
          "text": {"format": {"type": "json_object"}}}
     )
     if data.get("status") == "incomplete":
