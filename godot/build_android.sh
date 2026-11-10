@@ -16,6 +16,11 @@ command -v keytool >/dev/null || { echo "JDK keytool missing" >&2; exit 2; }
 
 keytool -list -keystore "$KEYSTORE" -storetype PKCS12 -storepass resetnight-ci-debug -alias resetnightdebug >/dev/null
 
+# Godot export presets require a native filesystem path for the debug keystore.
+sed -i "s|^keystore/debug=.*|keystore/debug=\\\"$KEYSTORE\\\"|" "$GODOT_PROJECT/export_presets.cfg"
+sed -i "s|^package/keystore/debug=.*|package/keystore/debug=\\\"$KEYSTORE\\\"|" "$GODOT_PROJECT/export_presets.cfg"
+
+
 GODOT_VERSION="$("$GODOT_BIN" --version)"
 echo "Godot: $GODOT_VERSION"
 VERSION_DIR="$(echo "$GODOT_VERSION" | sed 's/\.official.*//')"
@@ -43,7 +48,8 @@ export/android/debug_keystore_pass = "resetnight-ci-debug"
 EOF
 
 "$GODOT_BIN" --headless --editor --path "$GODOT_PROJECT" --import
-"$GODOT_BIN" --headless --path "$GODOT_PROJECT" --export-debug "Android" "$OUTPUT_APK"
+"$GODOT_BIN" --headless --editor --path "$GODOT_PROJECT" --quit --verbose
+"$GODOT_BIN" --headless --path "$GODOT_PROJECT" --export-debug "Android" "$OUTPUT_APK" --verbose
 test -s "$OUTPUT_APK"
 
 APKSIGNER="$(find "$ANDROID_HOME/build-tools" -type f -name apksigner | sort -V | tail -n 1)"
