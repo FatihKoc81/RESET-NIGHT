@@ -1,4 +1,4 @@
-[gd_scene load_steps=3 format=3]
+[gd_scene load_steps=4 format=3]
 
 [ext_resource type="Script" path="res://scripts/gun_3d.gd" id="1_gun"]
 
@@ -7,15 +7,24 @@ albedo_color = Color(0.075, 0.085, 0.095, 1)
 metallic = 0.72
 roughness = 0.38
 
+[sub_resource type="BoxMesh" id="ReceiverMesh"]
+size = Vector3(0.16, 0.14, 0.52]
+material = SubResource("GunMat")
+
+[sub_resource type="CylinderMesh" id="BarrelMesh"]
+top_radius = 0.035
+bottom_radius = 0.035
+height = 0.62
+material = SubResource("GunMat")
+
 [node name="Gun3D" type="Node3D"]
 script = ExtResource("1_gun")
 
 [node name="Receiver" type="MeshInstance3D" parent="."]
 position = Vector3(0, 0, -0.22)
-mesh = BoxMesh.new()
-material_override = SubResource("GunMat")
+mesh = SubResource("ReceiverMesh")
 
 [node name="Barrel" type="MeshInstance3D" parent="."]
 position = Vector3(0, 0.015, -0.48)
-mesh = CylinderMesh.new()
 rotation_degrees = Vector3(90, 0, 0)
+mesh = SubResource("BarrelMesh")

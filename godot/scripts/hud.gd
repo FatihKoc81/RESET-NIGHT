@@ -28,9 +28,9 @@ func _ready() -> void:
     message_label.anchor_left = 0.5
     message_label.anchor_right = 0.5
     message_label.position.x = -300
-    _make_action(root, "SOPA", Vector2(-250, -145), "use_bat")
+    _make_action(root, "VUR", Vector2(-250, -145), "use_bat")
     _make_action(root, "MOLOTOF", Vector2(-155, -145), "throw_molotov")
-    _make_action(root, "POMPALI", Vector2(-250, -65), "fire_shotgun")
+    _make_action(root, "ATEŞ", Vector2(-250, -65), "fire_shotgun")
     _make_action(root, "DOLDUR", Vector2(-155, -65), "reload_shotgun")
     _make_action(root, "FENER", Vector2(-60, -65), "toggle_flashlight")
     _make_action(root, "ARA (E)", Vector2(-250, -225), "interact")

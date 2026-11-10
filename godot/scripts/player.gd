@@ -178,16 +178,9 @@ func fire_shotgun() -> void:
         return
     shotgun_timer = 0.8
     shotgun_ammo -= 1
-    var origin := camera.global_position
-    var forward := -camera.global_transform.basis.z
-    for pellet in range(6):
-        var spread := Vector3(randf_range(-0.075, 0.075), randf_range(-0.055, 0.055), 0.0)
-        var direction := (forward + camera.global_transform.basis * spread).normalized()
-        var query := PhysicsRayQueryParameters3D.create(origin, origin + direction * 32.0)
-        query.exclude = [get_rid()]
-        var hit := get_world_3d().direct_space_state.intersect_ray(query)
-        if hit and hit.collider.is_in_group("enemies"):
-            hit.collider.take_damage(12.0)
+    var gun := get_node_or_null("WeaponPivot/Gun3D")
+    if is_instance_valid(gun):
+        gun.fire(self, camera)
     _notify("Pompalı %d / %d" % [shotgun_ammo, shotgun_reserve])
 
 func reload_shotgun() -> void:

@@ -39,7 +39,7 @@ func _mat(color: Color, rough: float, metallic: float = 0.0, emission: bool = fa
     return material
 
 func _build_ground() -> void:
-    _box(null, Vector3(0, -0.42, 0), Vector3(70, 0.8, 70), asphalt, false)
+    _box(null, Vector3(0, -0.42, 0), Vector3(70, 0.8, 70), asphalt, true)
     _box(null, Vector3(0, 0.015, -7.0), Vector3(70, 0.08, 12), asphalt, false)
     _box(null, Vector3(0, 0.08, -14.0), Vector3(70, 0.22, 1.8), sidewalk, true)
     _box(null, Vector3(0, 0.08, 0.0), Vector3(70, 0.22, 1.8), sidewalk, true)
