@@ -1,0 +1,11 @@
+[gd_scene load_steps=3 format=3]
+
+[sub_resource type="BoxMesh" id="ShotgunMesh"]
+size = Vector3(0.18, 0.16, 0.9)
+[sub_resource type="StandardMaterial3D" id="ShotgunMat"]
+albedo_color = Color(0.16, 0.17, 0.18, 1)
+metallic = 0.72
+[node name="Shotgun" type="Node3D"]
+[node name="GunBody" type="MeshInstance3D" parent="."]
+mesh = SubResource("ShotgunMesh")
+material_override = SubResource("ShotgunMat")

@@ -1,0 +1,33 @@
+[gd_scene load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scripts/player.gd" id="1_player"]
+
+[sub_resource type="CapsuleShape3D" id="Capsule_player"]
+radius = 0.42
+height = 1.8
+
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_player"]
+radius = 0.42
+height = 1.8
+
+[sub_resource type="StandardMaterial3D" id="Mat_player"]
+albedo_color = Color(0.34, 0.39, 0.46, 1)
+roughness = 0.88
+
+[node name="Player" type="CharacterBody3D" groups=["player"]]
+script = ExtResource("1_player")
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+shape = SubResource("Capsule_player")
+position = Vector3(0, 0.9, 0)
+[node name="Body" type="MeshInstance3D" parent="."]
+mesh = SubResource("CapsuleMesh_player")
+material_override = SubResource("Mat_player")
+position = Vector3(0, 0.9, 0)
+[node name="WeaponPivot" type="Marker3D" parent="."]
+position = Vector3(0, 1.05, -0.45)
+[node name="SpringArm3D" type="SpringArm3D" parent="."]
+position = Vector3(0, 1.7, 0)
+spring_length = 5.2
+[node name="Camera3D" type="Camera3D" parent="SpringArm3D"]
+current = true
+fov = 72.0

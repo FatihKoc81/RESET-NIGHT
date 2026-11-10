@@ -1,0 +1,45 @@
+[gd_scene load_steps=5 format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/Player.tscn" id="1_player"]
+[ext_resource type="Script" path="res://scripts/enemy_spawner.gd" id="2_spawner"]
+[ext_resource type="Script" path="res://scripts/hud.gd" id="3_hud"]
+
+[sub_resource type="Environment" id="Environment_world"]
+background_mode = 1
+background_color = Color(0.018, 0.026, 0.04, 1)
+ambient_light_source = 3
+ambient_light_color = Color(0.32, 0.38, 0.5, 1)
+ambient_light_energy = 0.7
+tonemap_mode = 2
+
+[sub_resource type="BoxShape3D" id="GroundShape"]
+size = Vector3(100, 1, 100)
+
+[node name="Main" type="Node3D"]
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_world")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+rotation_degrees = Vector3(-52, -28, 0)
+light_energy = 0.65
+shadow_enabled = true
+
+[node name="Ground" type="StaticBody3D" parent="."]
+position = Vector3(0, -0.55, 0)
+
+[node name="Mesh" type="MeshInstance3D" parent="Ground"]
+mesh = PlaneMesh.new()
+scale = Vector3(50, 1, 50)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Ground"]
+shape = SubResource("GroundShape")
+
+[node name="Player" parent="." instance=ExtResource("1_player")]
+position = Vector3(0, 1, 0)
+
+[node name="EnemySpawner" type="Node3D" parent="."]
+script = ExtResource("2_spawner")
+
+[node name="HUD" type="CanvasLayer" parent="."]
+script = ExtResource("3_hud")

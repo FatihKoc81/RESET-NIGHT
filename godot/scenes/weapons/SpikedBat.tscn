@@ -1,0 +1,16 @@
+[gd_scene load_steps=3 format=3]
+
+[sub_resource type="CylinderMesh" id="BatMesh"]
+top_radius = 0.055
+bottom_radius = 0.075
+height = 1.0
+[sub_resource type="StandardMaterial3D" id="BatMat"]
+albedo_color = Color(0.28, 0.2, 0.16, 1)
+metallic = 0.12
+[node name="SpikedBat" type="Node3D"]
+[node name="Bat" type="MeshInstance3D" parent="."]
+mesh = SubResource("BatMesh")
+material_override = SubResource("BatMat")
+rotation_degrees = Vector3(90, 0, 0)
+[node name="Nails" type="MeshInstance3D" parent="."]
+position = Vector3(0, 0.28, 0)
