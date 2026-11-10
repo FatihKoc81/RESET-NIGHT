@@ -98,6 +98,8 @@ func _build_settings_controls(root: Control) -> void:
 
 func _toggle_settings() -> void:
     settings_panel.visible = not settings_panel.visible
+    if settings_panel.visible and is_instance_valid(inventory_panel):
+        inventory_panel.visible = false
 
 func _on_sensitivity_changed(value: float) -> void:
     var manager := get_node_or_null("/root/MobileInputManager")

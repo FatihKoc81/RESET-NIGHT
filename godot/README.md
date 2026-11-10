@@ -55,5 +55,5 @@ Harita nesneleri bu prototipte Godot primitive mesh ve malzemeleriyle üretilen 
 - `scenes/ui/MobileControls.tscn`: sol alt bölgede görünmez sanal joystick alanı; çoklu dokunma desteklenir.
 - `scripts/mobile_input_manager.gd`: sağ üst/orta ekran sürüklemesiyle karakter yatay yönü ve CameraPivot dikey açısı kontrol edilir. Kamera hassasiyeti varsayılan `0.005`; AYARLAR panelindeki kaydırıcıyla değiştirilebilir ve `user://mobile_settings.cfg` dosyasına kaydedilir.
 - Sağ alt aksiyon düğmeleri HUD üzerinde kalır; bu alan kamera sürükleme bölgesinin dışında tutulur.
-- Renderer Android için GL Compatibility (OpenGL ES 3.0), V-Sync açık, hedef üst sınır 60 FPS; yönlü ve konumsal gölge atlasları 1024, yönlü gölge mesafesi 35 m olarak ayarlanmıştır.
+- Renderer Android için GL Compatibility (OpenGL ES 3.0), V-Sync açık, hedef üst sınır 60 FPS; yönlü ve konumsal gölge atlasları (mobil override dâhil) 1024, yönlü gölge mesafesi 35 m; dekoratif sokak/varil ışıklarının gerçek zamanlı gölgeleri kapalıdır olarak ayarlanmıştır.
 - Compatibility renderer volumetrik sisi desteklemediğinden mevcut standart sis korunur. Prosedürel çevre mesh'lerinde 70 m görünürlük sınırı ve 10 m yumuşak geçiş kullanılır; bu gerçek mesh LOD üretimi değildir.

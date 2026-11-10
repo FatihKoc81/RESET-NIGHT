@@ -161,7 +161,7 @@ func _street_lamp(pos: Vector3) -> void:
     lamp.light_color = Color(1.0, 0.68, 0.38)
     lamp.light_energy = 1.15
     lamp.omni_range = 9.0
-    lamp.shadow_enabled = true
+    lamp.shadow_enabled = false
     root.add_child(lamp)
 
 func _burning_barrel(pos: Vector3) -> void:
@@ -182,7 +182,7 @@ func _burning_barrel(pos: Vector3) -> void:
     light.light_color = Color(1.0, 0.28, 0.07)
     light.light_energy = 2.0
     light.omni_range = 7.0
-    light.shadow_enabled = true
+    light.shadow_enabled = false
     root.add_child(light)
 
 func _fence(pos: Vector3, length: float) -> void:
