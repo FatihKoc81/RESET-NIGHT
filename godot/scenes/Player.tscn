@@ -32,7 +32,8 @@ spring_length = 5.2
 [node name="Camera3D" type="Camera3D" parent="SpringArm3D"]
 current = true
 fov = 72.0
-[node name="Flashlight" type="SpotLight3D" parent="SpringArm3D/Camera3D"]
+[node name="Flashlight" type="SpotLight3D" parent="."]
+position = Vector3(0, 1.45, -0.35)
 rotation_degrees = Vector3(0, 0, 0)
 light_energy = 1.5
 spot_range = 24.0

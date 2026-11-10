@@ -21,7 +21,7 @@ var hud: Node
 var flashlight_on := true
 
 @onready var camera: Camera3D = $SpringArm3D/Camera3D
-@onready var flashlight: SpotLight3D = $SpringArm3D/Camera3D/Flashlight
+@onready var flashlight: SpotLight3D = $Flashlight
 
 func _ready() -> void:
     add_to_group("player")
