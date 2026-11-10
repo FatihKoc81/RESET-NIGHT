@@ -74,7 +74,7 @@ func _box(parent: Node, pos: Vector3, size: Vector3, material: Material, collisi
     if parent:
         parent.add_child(body)
     else:
-        $EnvironmentProps.add_child(body)
+        $GroundTiles.add_child(body)
     var mesh_instance := MeshInstance3D.new()
     var mesh := BoxMesh.new()
     mesh.size = size
