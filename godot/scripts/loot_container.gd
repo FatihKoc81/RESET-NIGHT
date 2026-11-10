@@ -34,7 +34,6 @@ func _process(delta: float) -> void:
         var player := get_tree().get_first_node_in_group("player")
         if is_instance_valid(player):
             _distribute_loot(player)
-        queue_redraw()
 
 func _distribute_loot(player: Node) -> void:
     var inventory: Node = player.get_node_or_null("InventoryManager")

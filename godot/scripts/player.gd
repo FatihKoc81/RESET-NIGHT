@@ -30,6 +30,8 @@ func _ready() -> void:
     health = max_health
     call_deferred("_find_hud")
     flashlight_on = flashlight.is_on
+    $InventoryManager.add_item("molotov", molotov_count)
+    molotov_count = 0
     Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 
 func _find_hud() -> void:
@@ -140,16 +142,14 @@ func use_bat() -> void:
     _notify("Çivili sopa: 25 hasar")
 
 func throw_molotov() -> void:
-    if molotov_count <= 0:
+    if not $InventoryManager.consume("molotov"):
         _notify("Molotof kalmadı")
         return
-    molotov_count -= 1
-    $InventoryManager.consume("molotov") if int($InventoryManager.inventory.get("molotov", 0)) > 0 else null
     var bottle := MOLOTOV_SCENE.instantiate()
     get_tree().current_scene.add_child(bottle)
     bottle.global_position = global_position + Vector3(0, 1.1, 0) - global_transform.basis.z * 0.8
     bottle.launch(-global_transform.basis.z, 16.0)
-    _notify("Molotof: %d" % molotov_count)
+    _notify("Molotof: %d" % int($InventoryManager.inventory.get("molotov", 0)))
 
 func fire_shotgun() -> void:
     if shotgun_timer > 0.0:

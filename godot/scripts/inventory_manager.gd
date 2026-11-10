@@ -11,13 +11,14 @@ const ITEMS := {
     "alcohol": {"name": "Alkol", "max_stack": 10},
     "molotov": {"name": "Molotof", "max_stack": 5},
     "first_aid": {"name": "İlk Yardım Kiti", "max_stack": 5},
-    "spiked_bat_upgrade": {"name": "Dikenli Sopa Takviyesi", "max_stack": 1}
+    "spiked_bat_upgrade": {"name": "Dikenli Sopa Takviyesi", "max_stack": 1},
+    "wire_trap": {"name": "Dikenli Tel Tuzağı", "max_stack": 5}
 }
 
 const RECIPES := {
     "molotov": {"name": "Molotof", "cost": {"cloth": 1, "alcohol": 1}, "output": 1},
     "first_aid": {"name": "İlk Yardım Kiti", "cost": {"cloth": 2, "alcohol": 1}, "output": 1},
-    "wire_trap": {"name": "Dikenli Tel Tuzağı", "cost": {"scrap_metal": 1, "wire_roll": 1}, "output": 1, "result_item": "wire_roll"},
+    "wire_trap": {"name": "Dikenli Tel Tuzağı", "cost": {"scrap_metal": 1, "wire_roll": 1}, "output": 1},
     "spiked_bat_upgrade": {"name": "Dikenli Sopa Takviyesi", "cost": {"scrap_metal": 2, "wire_roll": 2}, "output": 1}
 }
 
