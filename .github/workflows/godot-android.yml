@@ -20,17 +20,20 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Install Java and Android SDK prerequisites
+      - name: Install Java prerequisites
         shell: bash
         run: |
           apt-get update
           apt-get install -y openjdk-17-jdk curl unzip
           export JAVA_HOME="$(dirname "$(dirname "$(readlink -f "$(command -v java)")")")"
           echo "JAVA_HOME=$JAVA_HOME" >> "$GITHUB_ENV"
-          echo "ANDROID_HOME=${ANDROID_HOME:-/opt/android-sdk}" >> "$GITHUB_ENV"
-          echo "ANDROID_SDK_ROOT=${ANDROID_HOME:-/opt/android-sdk}" >> "$GITHUB_ENV"
-          ls -la "${ANDROID_HOME:-/opt/android-sdk}"
-          find "${ANDROID_HOME:-/opt/android-sdk}" -maxdepth 5 -type f -name apksigner -print || true
+
+      - name: Install Android SDK platforms and build tools
+        uses: android-actions/setup-android@v3
+        with:
+          cmdline-tools-version: 11076708
+          accept-android-sdk-licenses: true
+          packages: "platform-tools platforms;android-33 build-tools;33.0.2"
 
       - name: Restore stable Godot debug signing key
         uses: actions/cache@v4
