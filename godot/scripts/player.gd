@@ -51,6 +51,7 @@ func _apply_saved_character() -> void:
     if character == "vanguard":
         var old_visual := get_node_or_null("Visual")
         if is_instance_valid(old_visual):
+            remove_child(old_visual)
             old_visual.queue_free()
         var visual := VANGUARD_VISUAL.instantiate()
         visual.name = "Visual"
