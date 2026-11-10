@@ -32,7 +32,7 @@ def openai_check():
     headers = {"Authorization": f"Bearer {key}", "Content-Type": "application/json"}
     models = request("https://api.openai.com/v1/models", headers)
     available = {item["id"] for item in models.get("data", [])}
-    preferred = os.getenv("OPENAI_MODEL", "gpt-6-astra")
+    preferred = os.getenv("OPENAI_MODEL", "gpt-5-mini")
     candidates = [preferred, "gpt-5-mini", "gpt-4.1-mini"]
     model = next((name for name in candidates if name in available), None)
     if not model:
