@@ -54,33 +54,78 @@ def openai_check():
 
 def gemini_check():
     key = os.environ["GEMINI_API_KEY"]
-    models_data = request(f"https://generativelanguage.googleapis.com/v1beta/models?key={key}")
+    # Use the API-key header so the secret is not embedded in request URLs/logs.
+    api_headers = {"x-goog-api-key": key}
+    models_data = request(
+        "https://generativelanguage.googleapis.com/v1beta/models",
+        api_headers
+    )
     models = models_data.get("models", [])
-    preferred = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
     usable = [
         item for item in models
         if "generateContent" in item.get("supportedGenerationMethods", [])
     ]
-    by_name = {item["name"].split("/")[-1]: item["name"] for item in usable}
-    candidates = [preferred, "gemini-3.1-flash", "gemini-2.5-flash"]
-    model = next((name for name in candidates if name in by_name), None)
-    if not model:
-        model = next((name.split("/")[-1] for name in by_name if "flash" in name.lower()), None)
-    if not model:
-        raise RuntimeError("Gemini anahtarı geçerli, ancak generateContent destekleyen Flash modeli bulunamadı.")
-    endpoint = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={key}"
-    result = request(endpoint, {"Content-Type": "application/json"}, {
-        "contents": [{"parts": [{"text": "Reply with exactly: GEMINI_CONNECTED"}]}],
-        "generationConfig": {"maxOutputTokens": 40, "temperature": 0}
-    })
-    text = " ".join(
-        part.get("text", "")
-        for candidate in result.get("candidates", [])
-        for part in candidate.get("content", {}).get("parts", [])
+
+    preferred = os.getenv("GEMINI_MODEL", "").strip()
+    # Prefer current Flash models, but dynamically use the model catalogue
+    # instead of assuming a retired model ID remains available.
+    def rank(item):
+        name = item.get("name", "").split("/")[-1].lower()
+        if name == preferred.lower():
+            return (0, name)
+        if "3.1" in name and "flash" in name:
+            return (1, name)
+        if "3.0" in name and "flash" in name:
+            return (2, name)
+        if "2.5" in name and "flash" in name:
+            return (3, name)
+        if "flash" in name:
+            return (4, name)
+        return (9, name)
+
+    candidates = sorted(
+        [item for item in usable if "flash" in item.get("name", "").lower()],
+        key=rank
     )
-    if "GEMINI_CONNECTED" not in text:
-        raise RuntimeError("Gemini yanıt verdi ancak doğrulama metni eşleşmedi.")
-    return model
+    if not candidates:
+        raise RuntimeError(
+            "Gemini API anahtarı modelleri listeledi ancak generateContent "
+            "destekleyen Flash modeli bulunamadı."
+        )
+
+    errors = []
+    for item in candidates:
+        model_path = item["name"]
+        model = model_path.split("/")[-1]
+        endpoint = (
+            "https://generativelanguage.googleapis.com/v1beta/"
+            f"{model_path}:generateContent"
+        )
+        try:
+            result = request(endpoint, {
+                **api_headers,
+                "Content-Type": "application/json"
+            }, {
+                "contents": [{"parts": [{"text": "Reply with exactly: GEMINI_CONNECTED"}]}],
+                "generationConfig": {"maxOutputTokens": 40, "temperature": 0}
+            })
+            text = " ".join(
+                part.get("text", "")
+                for candidate in result.get("candidates", [])
+                for part in candidate.get("content", {}).get("parts", [])
+            )
+            if "GEMINI_CONNECTED" in text:
+                return model
+            errors.append(f"{model}: yanıt doğrulaması eşleşmedi")
+        except Exception as exc:
+            # A model can remain listed briefly after retirement. Try the
+            # next supported Flash model instead of aborting the whole check.
+            errors.append(f"{model}: {safe_error(exc)}")
+
+    raise RuntimeError(
+        "Listelenen Flash modellerinin hiçbiri test isteğini kabul etmedi. "
+        + " | ".join(errors[:4])
+    )
 
 def main():
     missing = [name for name in ("OPENAI_API_KEY", "GEMINI_API_KEY") if not os.getenv(name)]
