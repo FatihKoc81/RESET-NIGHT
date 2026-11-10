@@ -1,0 +1,32 @@
+name: RESET NIGHT AI Team Project Audit
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  read-only-audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout RESET NIGHT
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Run independent Gemini and GPT project audits
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          OPENAI_MODEL: gpt-5-mini
+        run: python3 tools/ai_team/project_audit.py
+      - name: Upload analysis report
+        if: always() && hashFiles('ai-team-report.md') != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: reset-night-ai-team-report
+          path: ai-team-report.md
+          retention-days: 14
