@@ -25,21 +25,30 @@ jobs:
         run: |
           apt-get update
           apt-get install -y openjdk-17-jdk curl unzip
-          export JAVA_HOME="$(dirname "$(dirname "$(readlink -f "$(command -v java)")")")"
+          JAVA_HOME="$(dirname "$(dirname "$(readlink -f "$(command -v java)")")")"
           echo "JAVA_HOME=$JAVA_HOME" >> "$GITHUB_ENV"
 
-      - name: Install Android SDK platforms and build tools
+      - name: Install Android SDK 34 and matching build tools
         uses: android-actions/setup-android@v3
         with:
           cmdline-tools-version: 11076708
           accept-android-sdk-licenses: true
-          packages: "platform-tools platforms;android-33 build-tools;33.0.2"
+          packages: "platform-tools platforms;android-34 build-tools;34.0.0 cmake;3.10.2.4988404 ndk;23.2.8568313"
+
+      - name: Verify Android SDK components
+        shell: bash
+        run: |
+          echo "ANDROID_HOME=$ANDROID_HOME"
+          test -d "$ANDROID_HOME/platforms/android-34"
+          test -x "$ANDROID_HOME/build-tools/34.0.0/apksigner"
+          test -d "$ANDROID_HOME/ndk/23.2.8568313"
+          test -d "$ANDROID_HOME/cmake/3.10.2.4988404"
 
       - name: Restore stable Godot debug signing key
         uses: actions/cache@v4
         with:
           path: ~/.android/resetnight-debug.keystore
-          key: reset-night-godot-pkcs12-debug-v3
+          key: reset-night-godot-pkcs12-debug-v4
 
       - name: Create stable PKCS12 signing key
         shell: bash
@@ -69,7 +78,7 @@ jobs:
         shell: bash
         run: |
           chmod +x godot/build_android.sh
-          GODOT_BIN=godot ANDROID_HOME="$ANDROID_HOME" godot/build_android.sh
+          GODOT_BIN=godot ANDROID_HOME="$ANDROID_HOME" RUNNER_TEMP="$RUNNER_TEMP" godot/build_android.sh
           cp RESET-NIGHT-GODOT.apk RESET-NIGHT-GODOT-Android.apk
 
       - name: Publish direct Godot APK release
@@ -77,7 +86,7 @@ jobs:
         with:
           tag_name: godot-android-latest
           name: RESET NIGHT Godot 3D Android
-          body: "Godot 4.3 native 3D Android APK. Package: com.fatihkoc.resetnight.godot3d. Version 1.4.3 (8)."
+          body: "Godot 4.3 native 3D Android APK. Package: com.fatihkoc.resetnight.godot3d. Version 1.4.4 (9)."
           files: RESET-NIGHT-GODOT-Android.apk
           make_latest: false
           fail_on_unmatched_files: true
