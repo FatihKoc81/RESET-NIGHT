@@ -1,0 +1,97 @@
+name: RESET NIGHT AI Developer Team
+
+on:
+  workflow_dispatch:
+    inputs:
+      task:
+        description: "One focused change request for the AI team"
+        required: true
+        type: string
+      target_file:
+        description: "Existing GDScript file (only godot/scripts/*.gd is allowed)"
+        required: true
+        default: "godot/scripts/mobile_controls.gd"
+        type: string
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  ai-develop-review-test:
+    runs-on: ubuntu-latest
+    container:
+      image: barichello/godot-ci:4.3
+    timeout-minutes: 20
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Gemini implements and GPT independently reviews
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          OPENAI_MODEL: gpt-5-mini
+          AI_TASK: ${{ inputs.task }}
+          AI_TARGET_FILE: ${{ inputs.target_file }}
+        run: python3 tools/ai_team/ai_developer.py
+
+      - name: Apply GPT-approved patch
+        run: git apply --check ai-generated.patch && git apply ai-generated.patch
+
+      - name: Validate Godot project and scenes
+        run: |
+          godot --version
+          godot --headless --editor --path godot --quit
+          godot --headless --path godot --script res://scripts/validate_scenes.gd
+
+      - name: Create reviewable pull request (never push to main)
+        uses: peter-evans/create-pull-request@v7
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          branch: ai/generated-${{ github.run_number }}
+          delete-branch: true
+          title: "AI proposal: ${{ inputs.task }}"
+          body-path: ai-pr-body.md
+          commit-message: "AI proposal: ${{ inputs.task }}"
+          add-paths: |
+            ${{ inputs.target_file }}
+
+      - name: Prepare PR review summary
+        if: always()
+        run: |
+          if [ -f ai-code-review.json ]; then
+            python3 - <<'PY'
+          import json
+          d=json.load(open("ai-code-review.json"))
+          r=d["review"]
+          with open("ai-pr-body.md","w") as f:
+              f.write("## AI development report\n\n")
+              f.write("- Gemini: "+d["gemini_model"]+"\n")
+              f.write("- GPT reviewer: "+d["reviewer_model"]+"\n")
+              f.write("- Target: `"+d["target"]+"`\n")
+              f.write("- Independent review: "+("APPROVED" if r["approved"] else "REJECTED")+"\n\n")
+              f.write(r["summary"]+"\n\n")
+              if r["issues"]: f.write("### Reviewer notes\n"+"\n".join("- "+x for x in r["issues"])+"\n")
+              f.write("\nGodot headless project import and scene validation passed before this PR was created. Android APK and real-device tests still require separate verification.\n")
+          PY
+          fi
+
+      - name: Upload AI review report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: reset-night-ai-developer-report
+          path: |
+            ai-code-review.json
+            ai-generated.patch
+          if-no-files-found: ignore
+          retention-days: 14
