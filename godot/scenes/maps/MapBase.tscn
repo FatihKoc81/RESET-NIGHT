@@ -1,0 +1,20 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/map_environment.gd" id="1_map"]
+
+[node name="MapBase" type="Node3D"]
+script = ExtResource("1_map")
+
+[node name="GroundTiles" type="Node3D" parent="."]
+
+[node name="EnvironmentProps" type="Node3D" parent="."]
+
+[node name="SpawnPoints" type="Node3D" parent="."]
+
+[node name="PlayerSpawn" type="Marker3D" parent="SpawnPoints"]
+position = Vector3(0, 0.2, 0)
+
+[node name="EnemySpawn_Scavenger" type="Marker3D" parent="SpawnPoints"]
+position = Vector3(16, 0.2, -14)
+
+[node name="NavigationRegion3D" type="NavigationRegion3D" parent="."]

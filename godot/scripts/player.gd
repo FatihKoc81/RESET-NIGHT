@@ -18,13 +18,16 @@ var reload_timer := 0.0
 var invulnerable := 0.0
 var yaw := 0.0
 var hud: Node
+var flashlight_on := true
 
 @onready var camera: Camera3D = $SpringArm3D/Camera3D
+@onready var flashlight: SpotLight3D = $SpringArm3D/Camera3D/Flashlight
 
 func _ready() -> void:
     add_to_group("player")
     health = max_health
     call_deferred("_find_hud")
+    flashlight_on = flashlight.is_on
     Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 
 func _find_hud() -> void:
@@ -71,6 +74,13 @@ func _physics_process(delta: float) -> void:
         fire_shotgun()
     if Input.is_action_just_pressed("reload"):
         reload_shotgun()
+    if Input.is_action_just_pressed("toggle_flashlight"):
+        toggle_flashlight()
+
+func toggle_flashlight() -> void:
+    flashlight.toggle()
+    flashlight_on = flashlight.is_on
+    _notify("Fener açık — düşman görüşü arttı" if flashlight_on else "Fener kapalı — gizlilik aktif")
 
 func use_bat() -> void:
     if bat_timer > 0.0:

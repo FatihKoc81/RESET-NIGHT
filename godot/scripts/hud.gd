@@ -25,6 +25,7 @@ func _ready() -> void:
     _make_action(root, "MOLOTOF", Vector2(-155, -145), "throw_molotov")
     _make_action(root, "POMPALI", Vector2(-250, -65), "fire_shotgun")
     _make_action(root, "DOLDUR", Vector2(-155, -65), "reload_shotgun")
+    _make_action(root, "FENER", Vector2(-60, -65), "toggle_flashlight")
     root.gui_input.connect(_on_root_input)
 
 func _label(parent: Control, text_value: String, pos: Vector2, size: Vector2, font_size: int) -> Label:
