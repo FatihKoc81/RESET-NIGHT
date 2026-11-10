@@ -21,12 +21,33 @@ def request(url, headers, payload=None):
         raise RuntimeError(f"Provider request failed with HTTP {exc.code}") from exc
 
 def output_text(data):
-    return "\n".join(
-        c.get("text", "")
-        for item in data.get("output", [])
-        for c in item.get("content", [])
-        if c.get("type") == "output_text"
-    ).strip()
+    """Collect text from Responses API output without assuming one content type."""
+    chunks = []
+    for item in data.get("output", []) or []:
+        for part in item.get("content", []) or []:
+            if isinstance(part, dict) and isinstance(part.get("text"), str):
+                chunks.append(part["text"])
+        if isinstance(item, dict) and isinstance(item.get("text"), str):
+            chunks.append(item["text"])
+    if not chunks and isinstance(data.get("output_text"), str):
+        chunks.append(data["output_text"])
+    return "\\n".join(chunks).strip()
+
+def parse_review_json(raw):
+    """Parse strict JSON, tolerating harmless fences or surrounding prose."""
+    text = (raw or "").strip().lstrip("\\ufeff")
+    text = re.sub(r"^\\s*```(?:json)?\\s*", "", text, flags=re.I)
+    text = re.sub(r"\\s*```\\s*$", "", text)
+    try:
+        return json.loads(text)
+    except json.JSONDecodeError:
+        # Recover the first complete JSON object, while still validating its schema below.
+        start = text.find("{")
+        if start < 0:
+            raise
+        decoder = json.JSONDecoder()
+        value, _ = decoder.raw_decode(text[start:])
+        return value
 
 def gemini_generate(original, feedback=None):
     key = os.environ["GEMINI_API_KEY"]
@@ -106,10 +127,17 @@ def gpt_review(original, proposed):
         {"model": model, "input": prompt, "max_output_tokens": 1800,
          "text": {"format": {"type": "json_object"}}}
     )
+    if data.get("status") == "incomplete":
+        details = data.get("incomplete_details") or {}
+        raise RuntimeError("GPT reviewer response incomplete (" + str(details.get("reason", "unknown")) + "); refusing to apply patch")
+    raw_review = output_text(data)
     try:
-        review = json.loads(output_text(data))
+        review = parse_review_json(raw_review)
     except Exception as exc:
-        raise RuntimeError("GPT reviewer returned invalid JSON; refusing to apply patch") from exc
+        preview = re.sub(r"[^\\x20-\\x7E]", "?", raw_review[:160])
+        raise RuntimeError("GPT reviewer returned unparseable JSON; refusing to apply patch. Response preview: " + preview) from exc
+    if not isinstance(review, dict):
+        raise RuntimeError("GPT reviewer response is not a JSON object; refusing to apply patch")
     if (not isinstance(review.get("approved"), bool)
             or not isinstance(review.get("issues"), list)
             or not isinstance(review.get("summary"), str)):
