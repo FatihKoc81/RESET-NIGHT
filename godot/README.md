@@ -1,21 +1,26 @@
 # RESET NIGHT — Godot 4 3D Comic Survival
 
-## Android package and update compatibility
+## Oyun modları
+- Solo Hayatta Kalma: tek oyunculu dalga tabanlı hayatta kalma modu.
+- Co-op Hayatta Kalma: ENet tabanlı oda oluşturma/oda katılma, 2–4 kişilik LAN bağlantı altyapısı.
+- Hikaye & Görev: şehirden kaçış ve bölge temizleme modu için ayrı menü girişi (mevcut oynanış haritası kullanılır; görev zinciri geliştirme aşamasındadır).
 
-- Android application ID: `com.fatihkoc.resetnight`
-- Version: `1.4.1` (version code 6)
-- The Android ID is intentionally distinct from the earlier test package `com.resetnight.game`, preventing Android from treating this build as an update to a differently signed package.
-- A persistent **debug-only** PKCS#12 key is stored at `godot/resetnight-debug.keystore`. CI and local exports use this same key, so future test APKs keep the same signing identity.
-- This is a development/test signing key, not a production release key. Do not publish a store release signed with it.
+## Co-op ağ altyapısı
+`NetworkManager` autoload'u Godot 4 `ENetMultiplayerPeer` ile host/join işlemlerini, bağlantı olaylarını ve oda durumunu yönetir. Varsayılan port UDP 2456'dır. Aynı yerel ağdaki oyuncular host IP'siyle bağlanabilir. İnternet üzerinden oynama için host tarafında UDP port yönlendirme veya bir relay/dedicated server gerekir.
 
-The first installation of this new package appears as a separate app from any older `com.resetnight.game` test installation. Once installed, later APKs built from this repository can update it without changing the signing identity. The older installation is not removed and its local data is not touched.
+**Önemli geliştirme sınırı:** Bu commit lobi ve bağlantı temelini kurar; oyuncu karakterlerinin, düşmanların, envanterin ve oyun durumunun ağ üzerinden senkronizasyonu henüz uygulanmış değildir. Bu nedenle Co-op menüsünde oda kurma/katılma çalışması, tam senkronize çok oyunculu maçın tamamlandığı anlamına gelmez.
 
-## Run and export
-Open `godot/project.godot` in Godot 4.3+. For Android export, install the Android SDK, JDK and matching Godot export templates, then run:
+## Menü seçenekleri
+- Oyna / Mod Seçimi: Solo, Co-op, Hikaye.
+- Karakter Seçimi / Eşyalar: Lider ve Öncü görsel arketipleri; seçim cihazda saklanır.
+- Ayarlar: ana ses ve dokunmatik hassasiyet ayarı saklanır; grafik profili mobil GL Compatibility'dir.
+- Liderlik Tablosu: arayüz girişi hazır; gerçek çevrimiçi skor API'si henüz bağlı değildir.
 
+## Android
+Android application ID: `com.fatihkoc.resetnight`, version `1.4.1` (code 6). Debug APK imzalama anahtarı sabittir; test APK güncellemeleri aynı anahtarla imzalanmalıdır.
+
+Godot 4.3+, Android SDK, JDK ve Godot Android export templates gerekir:
 ```bash
 cd godot
 ./build_android.sh
 ```
-
-The script imports resources, exports the Android APK and verifies its signature with Android build-tools.

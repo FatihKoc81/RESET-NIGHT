@@ -6,6 +6,7 @@ const BAT_RANGE := 2.4
 const STUN_CHANCE := 0.15
 const MOLOTOV_SCENE := preload("res://scenes/weapons/Molotov.tscn")
 const FIRST_AID_HEAL := 45.0
+const VANGUARD_VISUAL := preload("res://scenes/characters/VanguardSurvivor.tscn")
 
 @export var move_speed := 5.2
 @export var max_health := 100.0
@@ -29,6 +30,7 @@ var nearby_loot: Node3D
 
 func _ready() -> void:
     add_to_group("player")
+    _apply_saved_character()
     health = max_health
     call_deferred("_find_hud")
     flashlight_on = flashlight.is_on
@@ -39,6 +41,20 @@ func _ready() -> void:
     $InventoryManager.add_item("molotov", molotov_count)
     molotov_count = 0
     Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+
+
+func _apply_saved_character() -> void:
+    var config := ConfigFile.new()
+    if config.load("user://settings.cfg") != OK:
+        return
+    var character := str(config.get_value("player", "character", "leader"))
+    if character == "vanguard":
+        var old_visual := get_node_or_null("Visual")
+        if is_instance_valid(old_visual):
+            old_visual.queue_free()
+        var visual := VANGUARD_VISUAL.instantiate()
+        visual.name = "Visual"
+        add_child(visual)
 
 func _find_hud() -> void:
     hud = get_tree().get_first_node_in_group("hud")
