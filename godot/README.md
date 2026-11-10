@@ -1,26 +1,21 @@
 # RESET NIGHT — Godot 4 3D Comic Survival
 
-## Çalıştırma
-Godot 4.3+ ile bu klasördeki `project.godot` dosyasını açın. Ana menüde **OYUNA BAŞLA**, doğrudan `scenes/maps/Map3D.tscn` oyun alanını açar. Harita sahnesi oyuncu, düşman üretimi, barikatlar, HUD ve mobil dokunmatik kontrolleri kendi içinde barındırır.
+## Android package and update compatibility
 
-## 3D sahne yapısı
-- `scenes/maps/Map3D.tscn`: oynanabilir ana harita ve tüm oyun bileşenlerinin giriş sahnesi.
-- `scenes/player/Player3D.tscn`: CharacterBody3D oyuncu, kamera, fener ve Gun3D.
-- `scenes/enemies/ZombieWalker3D.tscn`: çizgi roman kaplamalı yürüteç zombi görseli.
-- `scenes/ui/MobileControls.tscn`: mobil sanal joystick girişi; HUD aksiyon düğmeleriyle birlikte çalışır.
+- Android application ID: `com.fatihkoc.resetnight`
+- Version: `1.4.1` (version code 6)
+- The Android ID is intentionally distinct from the earlier test package `com.resetnight.game`, preventing Android from treating this build as an update to a differently signed package.
+- A persistent **debug-only** PKCS#12 key is stored at `godot/resetnight-debug.keystore`. CI and local exports use this same key, so future test APKs keep the same signing identity.
+- This is a development/test signing key, not a production release key. Do not publish a store release signed with it.
 
-## Comic / cel-shading
-`shaders/comic_cel.gdshader` basamaklı ışıklandırma ve çapraz tarama dokusu uygular. `shaders/ink_outline.gdshader` siyah dış konturu üretir. Oyuncu, zombi ve pompalı tüfek materyalleri bu iki shader katmanını kullanır. Stil, The Walking Dead çizgi romanının atmosferinden esinlenen özgün bir uygulamadır; resmi görsel varlık içermez.
+The first installation of this new package appears as a separate app from any older `com.resetnight.game` test installation. Once installed, later APKs built from this repository can update it without changing the signing identity. The older installation is not removed and its local data is not touched.
 
-## Android APK
-- `export_presets.cfg`: Android / arm64-v8a dışa aktarma profili.
-- `build_android.sh`: Godot 4 headless import, Android export ve APK dosyası doğrulama adımları.
-- GitHub Actions: `.github/workflows/godot-android.yml`; Godot 4.3 CI ortamında APK üretip artifact olarak yükler.
+## Run and export
+Open `godot/project.godot` in Godot 4.3+. For Android export, install the Android SDK, JDK and matching Godot export templates, then run:
 
-Yerel derleme için Godot 4.3+, Android SDK, JDK ve Android export templates kurulu olmalıdır:
 ```bash
 cd godot
 ./build_android.sh
 ```
 
-Not: Kaynak kod GitHub'a push edildiğinde CI iş akışı tetiklenir. APK'nın gerçekten üretildiği, ilgili GitHub Actions çalışması başarılı olduktan sonra doğrulanmış olur.
+The script imports resources, exports the Android APK and verifies its signature with Android build-tools.
