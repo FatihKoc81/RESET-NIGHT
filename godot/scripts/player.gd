@@ -11,6 +11,7 @@ const FIRST_AID_HEAL := 45.0
 @export var max_health := 100.0
 var health := 100.0
 var stamina := 100.0
+var bat_durability := 100.0
 var shotgun_ammo := 2
 var shotgun_reserve := 20
 var molotov_count := 3
@@ -31,6 +32,7 @@ func _ready() -> void:
     health = max_health
     call_deferred("_find_hud")
     flashlight_on = flashlight.is_on
+    $InventoryManager.add_item("spiked_bat", 1)
     $InventoryManager.add_item("molotov", molotov_count)
     molotov_count = 0
     Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
@@ -136,8 +138,12 @@ func use_bat() -> void:
         return
     bat_timer = BAT_COOLDOWN
     var target := _nearest_enemy(BAT_RANGE)
+    if bat_durability <= 0.0:
+        _notify("Çivili sopa kırıldı")
+        return
     if target:
         target.take_damage(BAT_DAMAGE)
+        bat_durability = maxf(0.0, bat_durability - 1.0)
         if randf() < STUN_CHANCE:
             target.stun(1.0)
     _notify("Çivili sopa: 25 hasar")

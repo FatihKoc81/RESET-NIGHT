@@ -11,6 +11,7 @@ const ITEMS := {
     "alcohol": {"name": "Alkol", "max_stack": 10},
     "molotov": {"name": "Molotof", "max_stack": 5},
     "first_aid": {"name": "İlk Yardım Kiti", "max_stack": 5},
+    "spiked_bat": {"name": "Çivili Sopa", "max_stack": 1},
     "spiked_bat_upgrade": {"name": "Dikenli Sopa Takviyesi", "max_stack": 1},
     "wire_trap": {"name": "Dikenli Tel Tuzağı", "max_stack": 5}
 }

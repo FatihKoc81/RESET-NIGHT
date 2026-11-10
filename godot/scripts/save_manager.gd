@@ -45,7 +45,10 @@ func save_game() -> bool:
         for item_id in bag.ITEMS:
             var amount := int(bag.inventory.get(item_id, 0))
             if amount > 0:
-                items.append({"id": item_id, "amount": amount})
+                var item_entry := {"id": item_id, "amount": amount}
+                if item_id == "spiked_bat":
+                    item_entry["durability"] = float(player.bat_durability)
+                items.append(item_entry)
     var barricades: Array[Dictionary] = []
     var barricade_root := get_tree().current_scene.get_node_or_null("Barricades")
     if is_instance_valid(barricade_root):
@@ -73,7 +76,8 @@ func save_game() -> bool:
             "rotation_y": float(player.rotation.y),
             "flashlight_on": bool(player.flashlight_on),
             "shotgun_ammo": int(player.shotgun_ammo),
-            "shotgun_reserve": int(player.shotgun_reserve)
+            "shotgun_reserve": int(player.shotgun_reserve),
+            "bat_durability": float(player.bat_durability)
         },
         "survival_stats": {
             "current_night": current_night,
@@ -120,6 +124,7 @@ func load_game() -> bool:
     player.flashlight.set_enabled(player.flashlight_on)
     player.shotgun_ammo = int(stats.get("shotgun_ammo", 2))
     player.shotgun_reserve = int(stats.get("shotgun_reserve", 20))
+    player.bat_durability = clampf(float(stats.get("bat_durability", 100.0)), 0.0, 100.0)
     var bag: Node = player.get_node_or_null("InventoryManager")
     if is_instance_valid(bag):
         for item_id in bag.ITEMS:
@@ -127,6 +132,8 @@ func load_game() -> bool:
         for entry in data.get("inventory", []):
             if typeof(entry) == TYPE_DICTIONARY:
                 bag.add_item(str(entry.get("id", "")), int(entry.get("amount", 0)))
+                if str(entry.get("id", "")) == "spiked_bat":
+                    player.bat_durability = clampf(float(entry.get("durability", player.bat_durability)), 0.0, 100.0)
     var survival: Dictionary = data.get("survival_stats", {})
     current_night = int(survival.get("current_night", 1))
     elapsed_time_seconds = float(survival.get("elapsed_time_seconds", 0.0))
