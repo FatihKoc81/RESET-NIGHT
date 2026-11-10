@@ -146,6 +146,9 @@ func use_bat() -> void:
     if bat_timer > 0.0:
         return
     bat_timer = BAT_COOLDOWN
+    var visual := get_node_or_null("Visual")
+    if is_instance_valid(visual) and visual.has_method("trigger_swing"):
+        visual.trigger_swing()
     var target := _nearest_enemy(BAT_RANGE)
     if bat_durability <= 0.0:
         _notify("Çivili sopa kırıldı")

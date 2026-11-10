@@ -2,7 +2,8 @@ extends CharacterBody3D
 
 @export var health := 60.0
 @export var walk_speed := 2.0
-@export var base_detection_range := 3.0
+@export var base_detection_range := 5.5
+@export var hearing_range := 9.0
 var target: Node3D
 var attack_cooldown := 0.0
 var stun_time := 0.0
@@ -29,18 +30,24 @@ func _physics_process(delta: float) -> void:
         var detection_range := base_detection_range
         if target.get("flashlight_on"):
             detection_range *= 1.7
-        var can_see_player := offset.length() <= detection_range and _has_line_of_sight()
+        var can_see_player := (offset.length() <= detection_range and _has_line_of_sight()) or offset.length() <= hearing_range
         if can_see_player:
             var direction := offset.normalized()
             if offset.length() > 1.35:
                 velocity.x = direction.x * walk_speed
                 velocity.z = direction.z * walk_speed
                 rotation.y = atan2(-direction.x, -direction.z)
+                var visual := get_node_or_null("Visual")
+                if is_instance_valid(visual):
+                    visual.rotation.z = 0.0
             else:
                 velocity.x = 0.0
                 velocity.z = 0.0
                 if attack_cooldown <= 0.0:
-                    attack_cooldown = 1.25
+                    attack_cooldown = 1.45
+                    var visual := get_node_or_null("Visual")
+                    if is_instance_valid(visual) and visual.has_method("trigger_bite"):
+                        visual.trigger_bite()
                     target.take_damage(8.0)
         else:
             _wander(delta)

@@ -7,6 +7,7 @@ var ll: Node3D
 var rl: Node3D
 var head: Node3D
 var phase := 0.0
+var attack_pose_time := 0.0
 var outline: Shader
 func _ready():
     outline = load("res://shaders/ink_outline.gdshader")
@@ -14,12 +15,14 @@ func _ready():
 func _process(delta):
     if not animated: return
     phase += delta * (1.6 if archetype == "walker" else 2.6)
+    attack_pose_time = maxf(0.0, attack_pose_time - delta)
     var stride = sin(phase) * (0.09 if archetype == "walker" else 0.2)
     ll.rotation.x = stride
     rl.rotation.x = -stride
     if archetype == "walker":
-        la.rotation.x = -1.0 + stride * 0.2
-        ra.rotation.x = -1.0 - stride * 0.2
+        var bite_pose = 0.75 if attack_pose_time > 0.0 else 0.0
+        la.rotation.x = -1.0 - bite_pose + stride * 0.2
+        ra.rotation.x = -1.0 - bite_pose + stride * 0.2
         la.rotation.z = -0.22 + sin(phase) * 0.03
         ra.rotation.z = 0.22 - sin(phase) * 0.03
         rotation.z = sin(phase * 0.5) * 0.045
@@ -128,3 +131,9 @@ func mat(color,rough=0.92):
     ink.shader = outline
     material.next_pass = ink
     return material
+
+func trigger_bite() -> void:
+    attack_pose_time = 0.55
+
+func trigger_swing() -> void:
+    attack_pose_time = 0.42
