@@ -285,5 +285,5 @@ jobs:
       - run: chmod +x android/gradlew && cd android && ./gradlew assembleDebug
       - uses: actions/upload-artifact@v4
         with:
-          name: arinma-gecesi-apk
+          name: RESET-NIGHT
           path: android/app/build/outputs/apk/debug/app-debug.apk
