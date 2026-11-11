@@ -29,8 +29,7 @@ jobs:
        github.event.comment.user.login == 'FatihKoc81' &&
        github.event.comment.body &&
        startsWith(github.event.comment.body, '/ai-revise') &&
-       github.event.issue.pull_request.head.repo.full_name == github.repository &&
-       github.event.issue.pull_request.base.ref == 'main')
+       github.event.issue.pull_request.url != '')
     runs-on: ubuntu-latest
     container:
       image: barichello/godot-ci:4.3
@@ -66,7 +65,8 @@ jobs:
           MANUAL_TASK: ${{ inputs.task }}
           MANUAL_TARGET: ${{ inputs.target_file }}
           COMMENT_BODY: ${{ github.event.comment.body }}
-          PR_HEAD_REF: ${{ github.event.issue.pull_request.head.ref }}
+          PR_NUMBER: ${{ github.event.issue.number }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           python3 - <<'PY'
           import os, pathlib, subprocess
@@ -80,7 +80,18 @@ jobs:
               if not lines or lines[0].strip() != "/ai-revise":
                   raise SystemExit("Comment must start with /ai-revise on its own line")
               task = "\n".join(lines[1:]).strip()
-              head = os.environ["PR_HEAD_REF"]
+              import json, urllib.request
+              pr_number = os.environ["PR_NUMBER"]
+              request = urllib.request.Request(
+                  f"https://api.github.com/repos/{os.environ['GITHUB_REPOSITORY']}/pulls/{pr_number}",
+                  headers={"Authorization": "Bearer " + os.environ["GH_TOKEN"],
+                           "Accept": "application/vnd.github+json"}
+              )
+              with urllib.request.urlopen(request, timeout=30) as response:
+                  pr = json.loads(response.read().decode())
+              if pr.get("base", {}).get("ref") != "main" or pr.get("head", {}).get("repo", {}).get("full_name") != os.environ["GITHUB_REPOSITORY"]:
+                  raise SystemExit("Only same-repository PRs targeting main can request AI revisions")
+              head = pr.get("head", {}).get("ref", "")
               if not head or head.startswith("-") or "/" in head or ".." in head:
                   raise SystemExit("Unsafe PR head branch")
               subprocess.run(["git", "fetch", "--no-tags", "origin", head, "--depth=1"], check=True)
