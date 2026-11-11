@@ -22,6 +22,9 @@ var _update_asset_url := ""
 var _settings := ConfigFile.new()
 
 func _ready() -> void:
+    # Portrait is reserved for the opening/menu experience.
+    DisplayServer.screen_set_orientation(DisplayServer.SCREEN_PORTRAIT)
+    DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_FULLSCREEN)
     theme = BUILDER.new().setup_theme()
     _settings.load("user://settings.cfg")
     _selected_character = str(_settings.get_value("player", "character", "leader"))
@@ -227,6 +230,9 @@ func _start_story() -> void:
     _start_map("story")
 
 func _start_map(mode: String) -> void:
+    # Switch the whole game to immersive landscape before entering the 3D world.
+    DisplayServer.screen_set_orientation(DisplayServer.SCREEN_LANDSCAPE)
+    DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_FULLSCREEN)
     var manager := get_node_or_null("/root/NetworkManager")
     if is_instance_valid(manager):
         manager.game_mode = mode
