@@ -10,6 +10,9 @@ func _ready() -> void:
     player = get_tree().get_first_node_in_group("player")
 
 func _process(delta: float) -> void:
+    var world_clock := get_node_or_null("/root/WorldBroadcast")
+    if is_instance_valid(world_clock) and not world_clock.is_purge_night:
+        return
     timer -= delta
     if timer > 0.0:
         return
