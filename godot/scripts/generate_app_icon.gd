@@ -46,8 +46,8 @@ func _initialize() -> void:
     mono_art.resize(250, 140, Image.INTERPOLATE_LANCZOS)
     for y in range(mono_art.get_height()):
         for x in range(mono_art.get_width()):
-            var px := mono_art.get_pixel(x, y)
-            var luminance := (px.r + px.g + px.b) / 3.0
+            var px: Color = mono_art.get_pixel(x, y)
+            var luminance: float = (px.r + px.g + px.b) / 3.0
             mono_art.set_pixel(x, y, Color(1, 1, 1, px.a * luminance))
     mono.blit_rect(mono_art, Rect2i(0, 0, 250, 140), Vector2i(91, 146))
     if not _save(mono, "res://assets/reset_night_adaptive_monochrome.png"):
