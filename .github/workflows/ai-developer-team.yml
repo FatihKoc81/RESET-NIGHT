@@ -58,6 +58,9 @@ jobs:
             exit 1
           fi
 
+      - name: Mark checkout safe for container Git operations
+        run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
+
       - name: Resolve task and safe target file
         id: request
         env:
