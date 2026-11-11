@@ -26,6 +26,11 @@ jobs:
           distribution: temurin
           java-version: "17"
 
+      - name: Install Python 3 for Godot template downloader
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
       - name: Install Android SDK 34 and matching build tools
         uses: android-actions/setup-android@v3
         with:
