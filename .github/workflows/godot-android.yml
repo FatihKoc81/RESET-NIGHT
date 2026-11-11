@@ -14,11 +14,18 @@ permissions:
 jobs:
   validate-export:
     runs-on: ubuntu-latest
-    container:
-      image: barichello/godot-ci:4.3
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Install Godot 4.3 on GitHub-hosted Ubuntu
+        shell: bash
+        run: |
+          curl -fsSL https://github.com/godotengine/godot/releases/download/4.3-stable/Godot_v4.3-stable_linux.x86_64.zip -o "$RUNNER_TEMP/godot.zip"
+          unzip -oq "$RUNNER_TEMP/godot.zip" -d "$RUNNER_TEMP/godot-bin"
+          chmod +x "$RUNNER_TEMP/godot-bin/Godot_v4.3-stable_linux.x86_64"
+          sudo ln -sf "$RUNNER_TEMP/godot-bin/Godot_v4.3-stable_linux.x86_64" /usr/local/bin/godot
+          godot --version
 
       - name: Install Java 17 without container apt repositories
         uses: actions/setup-java@v4
