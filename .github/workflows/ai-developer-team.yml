@@ -12,23 +12,82 @@ on:
         required: true
         default: "godot/scripts/mobile_controls.gd"
         type: string
+  issue_comment:
+    types: [created]
 
 permissions:
   contents: write
   pull-requests: write
+  issues: read
 
 jobs:
   ai-develop-review-test:
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'issue_comment' &&
+       github.event.issue.pull_request &&
+       github.event.comment.user.login == 'FatihKoc81' &&
+       github.event.comment.body &&
+       startsWith(github.event.comment.body, '/ai-revise') &&
+       github.event.issue.pull_request.head.repo.full_name == github.repository &&
+       github.event.issue.pull_request.base.ref == 'main')
     runs-on: ubuntu-latest
     container:
       image: barichello/godot-ci:4.3
-    timeout-minutes: 20
+    timeout-minutes: 25
     steps:
-      - name: Checkout main
+      - name: Checkout trusted main workflow and tools
         uses: actions/checkout@v4
         with:
           ref: main
+          fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Resolve task and safe target file
+        id: request
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          MANUAL_TASK: ${{ inputs.task }}
+          MANUAL_TARGET: ${{ inputs.target_file }}
+          COMMENT_BODY: ${{ github.event.comment.body }}
+          PR_HEAD_REF: ${{ github.event.issue.pull_request.head.ref }}
+        run: |
+          python3 - <<'PY'
+          import os, pathlib, subprocess
+          event = os.environ["EVENT_NAME"]
+          if event == "workflow_dispatch":
+              task = os.environ.get("MANUAL_TASK", "").strip()
+              target = os.environ.get("MANUAL_TARGET", "").strip()
+          else:
+              body = os.environ.get("COMMENT_BODY", "")
+              lines = body.splitlines()
+              if not lines or lines[0].strip() != "/ai-revise":
+                  raise SystemExit("Comment must start with /ai-revise on its own line")
+              task = "\n".join(lines[1:]).strip()
+              head = os.environ["PR_HEAD_REF"]
+              if not head or head.startswith("-") or "/" in head or ".." in head:
+                  raise SystemExit("Unsafe PR head branch")
+              subprocess.run(["git", "fetch", "--no-tags", "origin", head, "--depth=1"], check=True)
+              changed = subprocess.check_output(
+                  ["git", "diff", "--name-only", "origin/main...FETCH_HEAD"], text=True
+              ).splitlines()
+              if len(changed) != 1:
+                  raise SystemExit("Comment-triggered revision requires exactly one changed file in the PR")
+              target = changed[0]
+              pathlib.Path("/tmp/ai-pr-head-ref").write_text(head, encoding="utf-8")
+          p = pathlib.PurePosixPath(target)
+          if not target.startswith("godot/scripts/") or not target.endswith(".gd") or ".." in p.parts:
+              raise SystemExit("Target must be an existing .gd file under godot/scripts/")
+          if not task or len(task) > 1200:
+              raise SystemExit("Task must contain 1–1200 characters")
+          if event == "issue_comment":
+              with open(target, "wb") as out:
+                  subprocess.run(["git", "show", "FETCH_HEAD:" + target], check=True, stdout=out)
+          with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as f:
+              f.write("task<<TASK_EOF\n" + task + "\nTASK_EOF\n")
+              f.write("target=" + target + "\n")
+          print("Request accepted for", target)
+          PY
 
       - name: Install Python in Godot container
         run: |
@@ -51,13 +110,13 @@ jobs:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           OPENAI_MODEL: gpt-5-mini
-          AI_TASK: ${{ inputs.task }}
-          AI_TARGET_FILE: ${{ inputs.target_file }}
+          AI_TASK: ${{ steps.request.outputs.task }}
+          AI_TARGET_FILE: ${{ steps.request.outputs.target }}
         run: python3 tools/ai_team/ai_developer.py
 
       - name: Apply GPT-approved replacement file
         env:
-          AI_TARGET_FILE: ${{ inputs.target_file }}
+          AI_TARGET_FILE: ${{ steps.request.outputs.target }}
         run: |
           python3 - <<'PY'
           import json, os, pathlib, shutil
@@ -82,34 +141,33 @@ jobs:
 
       - name: Prepare PR review summary
         run: |
-          if [ -f ai-code-review.json ]; then
-            python3 - <<'PY'
+          python3 - <<'PY'
           import json
-          d=json.load(open("ai-code-review.json"))
+          d=json.load(open("ai-code-review.json", encoding="utf-8"))
           r=d["review"]
-          with open("ai-pr-body.md","w") as f:
+          with open("ai-pr-body.md","w",encoding="utf-8") as f:
               f.write("## AI development report\n\n")
               f.write("- Gemini: "+d["gemini_model"]+"\n")
               f.write("- GPT reviewer: "+d["reviewer_model"]+"\n")
               f.write("- Target: `"+d["target"]+"`\n")
               f.write("- Independent review: "+("APPROVED" if r["approved"] else "REJECTED")+"\n\n")
               f.write(r["summary"]+"\n\n")
-              if r["issues"]: f.write("### Reviewer notes\n"+"\n".join("- "+x for x in r["issues"])+"\n")
+              if r["issues"]: f.write("### Reviewer notes\n"+"\n".join("- "+str(x) for x in r["issues"])+"\n")
               f.write("\nGodot headless project import and scene validation passed before this PR was created. Android APK and real-device tests still require separate verification.\n")
           PY
-          fi
 
       - name: Create reviewable pull request (never push to main)
         uses: peter-evans/create-pull-request@v7
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           branch: ai/generated-${{ github.run_number }}
+          base: main
           delete-branch: true
-          title: "AI proposal: ${{ inputs.task }}"
+          title: "AI proposal: ${{ steps.request.outputs.task }}"
           body-path: ai-pr-body.md
-          commit-message: "AI proposal: ${{ inputs.task }}"
+          commit-message: "AI proposal: ${{ steps.request.outputs.task }}"
           add-paths: |
-            ${{ inputs.target_file }}
+            ${{ steps.request.outputs.target }}
 
       - name: Upload AI review report
         if: always()
@@ -118,6 +176,6 @@ jobs:
           name: reset-night-ai-developer-report
           path: |
             ai-code-review.json
-            ai-generated.patch
+            ai-proposed-file.gd
           if-no-files-found: ignore
           retention-days: 14
