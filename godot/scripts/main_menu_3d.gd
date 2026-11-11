@@ -4,12 +4,13 @@ const GAME_SCENE := "res://scenes/maps/Map3D.tscn"
 const BUILDER = preload("res://scripts/ui_asset_builder.gd")
 const PORT := 2456
 const UPDATE_RELEASE_API := "https://api.github.com/repos/FatihKoc81/RESET-NIGHT/releases/tags/godot-android-latest"
-const CURRENT_VERSION_CODE := 10
+const CURRENT_VERSION_CODE := 11
 const UPDATE_FILE := "user://reset-night-update.apk"
 
 var _body: VBoxContainer
 var _notice: Label
 var _content: VBoxContainer
+var _hero_art: TextureRect
 var _continue_button: Button
 var _join_address: LineEdit
 var _lobby_status: Label
@@ -66,12 +67,20 @@ func _build_shell() -> void:
     _content.add_theme_constant_override("separation", 12)
     scroll.add_child(_content)
 
-    var eyebrow := _label("SURVIVE THE DARK", 13, "#b5a7a2")
-    eyebrow.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-    _content.add_child(eyebrow)
-    var title := _label("RESET NIGHT", 38, "#d32f2f")
-    title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-    _content.add_child(title)
+    # Original title artwork supplied for RESET NIGHT; decode the bundled WebP at runtime.
+    _hero_art = TextureRect.new()
+    _hero_art.name = "ResetNightTitleArtwork"
+    _hero_art.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+    _hero_art.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT
+    _hero_art.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+    var artwork_b64 := FileAccess.get_file_as_string("res://assets/reset_night_title.webp.b64").strip_edges()
+    if not artwork_b64.is_empty():
+        var artwork := Image.new()
+        var artwork_error := artwork.load_webp_from_buffer(Marshalls.base64_to_raw(artwork_b64))
+        if artwork_error == OK:
+            _hero_art.texture = ImageTexture.create_from_image(artwork)
+    _content.add_child(_hero_art)
+
     var subtitle := _label("ÇEVRİMİÇİ / ÇEVRİMDIŞI DESTEKLİ", 13, "#d4c4bd")
     subtitle.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
     _content.add_child(subtitle)
@@ -96,6 +105,8 @@ func _build_shell() -> void:
 func _layout_menu() -> void:
     if is_instance_valid(_content):
         _content.custom_minimum_size.x = maxf(280.0, size.x - 28.0)
+    if is_instance_valid(_hero_art):
+        _hero_art.custom_minimum_size.y = clampf((size.x - 28.0) * 0.56, 160.0, 340.0)
 
 func _label(value: String, font_size: int, color: String) -> Label:
     var label := Label.new()
