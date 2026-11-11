@@ -120,7 +120,7 @@ def gpt_review(original, proposed):
         "Do not invent problems. If you find a concrete blocker, explain it in one short actionable issue. "
         "Return ONLY a JSON object with exactly these fields: "
         '{"approved": true, "summary": "short Turkish result", '
-        '"issues": []}. The approved value must be a boolean; issues must be an array. "
+        '"issues": []}. The approved value must be a boolean; issues must be an array. '
         "Keep the response below 300 words. The next workflow steps run Godot validation.\\n\\n"
         "TASK:\\n" + TASK + "\\n\\nPATCH TO REVIEW:\\n" + diff
     )
