@@ -99,7 +99,8 @@ jobs:
                   or not re.fullmatch(r"[A-Za-z0-9._/-]+", head)
                   or any(part in ("", ".", "..") for part in head.split("/"))):
                   raise SystemExit("Unsafe PR head branch")
-              subprocess.run(["git", "fetch", "--no-tags", "origin", head, "--depth=1"], check=True)
+              subprocess.run(["git", "fetch", "--no-tags", "origin", "main"], check=True)
+              subprocess.run(["git", "fetch", "--no-tags", "origin", head], check=True)
               changed = subprocess.check_output(
                   ["git", "diff", "--name-only", "origin/main...FETCH_HEAD"], text=True
               ).splitlines()
