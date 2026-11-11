@@ -38,9 +38,9 @@ fov = 72.0
 
 [node name="Flashlight" type="SpotLight3D" parent="CameraPivot"]
 position = Vector3(0, 0, -0.35)
-light_energy = 2.8
-spot_range = 16.0
-spot_angle = 45.0
+light_energy = 4.0
+spot_range = 22.0
+spot_angle = 52.0
 shadow_enabled = true
 script = ExtResource("2")
 
