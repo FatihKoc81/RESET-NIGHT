@@ -16,6 +16,11 @@ func _ready() -> void:
 
 func _physics_process(delta: float) -> void:
     attack_cooldown = maxf(0.0, attack_cooldown - delta)
+    var world_clock := get_node_or_null("/root/WorldBroadcast")
+    if is_instance_valid(world_clock) and not world_clock.is_purge_night:
+        velocity.x = move_toward(velocity.x, 0.0, 12.0 * delta)
+        velocity.z = move_toward(velocity.z, 0.0, 12.0 * delta)
+        return
     stun_time = maxf(0.0, stun_time - delta)
     wander_timer -= delta
     if not is_instance_valid(target):
