@@ -68,6 +68,9 @@ jobs:
       - name: Prepare Godot export signing key
         run: cp ~/.android/resetnight-debug.keystore godot/resetnight-debug.keystore
 
+      - name: Generate RESET NIGHT launcher icon
+        run: godot --headless --path godot --script res://scripts/generate_app_icon.gd
+
       - name: Validate Godot scene resources
         run: |
           godot --version
