@@ -55,8 +55,24 @@ jobs:
           AI_TARGET_FILE: ${{ inputs.target_file }}
         run: python3 tools/ai_team/ai_developer.py
 
-      - name: Apply GPT-approved patch
-        run: git apply --check ai-generated.patch && git apply ai-generated.patch
+      - name: Apply GPT-approved replacement file
+        env:
+          AI_TARGET_FILE: ${{ inputs.target_file }}
+        run: |
+          python3 - <<'PY'
+          import json, os, pathlib, shutil
+          target = pathlib.PurePosixPath(os.environ["AI_TARGET_FILE"])
+          if not str(target).startswith("godot/scripts/") or not str(target).endswith(".gd") or ".." in target.parts:
+              raise SystemExit("Unsafe target path")
+          report = json.loads(pathlib.Path("ai-code-review.json").read_text(encoding="utf-8"))
+          if report.get("patch_applied") is not True or report.get("review", {}).get("approved") is not True:
+              raise SystemExit("No GPT-approved change is available")
+          source = pathlib.Path("ai-proposed-file.gd")
+          if not source.is_file():
+              raise SystemExit("Reviewed replacement file is missing")
+          shutil.copyfile(source, pathlib.Path(str(target)))
+          print("GPT-approved replacement copied to", target)
+          PY
 
       - name: Validate Godot project and scenes
         run: |
