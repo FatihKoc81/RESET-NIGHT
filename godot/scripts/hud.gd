@@ -52,28 +52,53 @@ func _layout_hud(root: Control) -> void:
     var view := root.size
     if view.x <= 0.0 or view.y <= 0.0:
         return
+    var margin := clampf(view.x * 0.018, 12.0, 24.0)
+    var compact := view.x < 900.0
+    var action_w := clampf(view.x * 0.066, 68.0, 88.0)
+    var action_h := clampf(view.y * 0.105, 48.0, 62.0)
+    var action_gap := clampf(view.x * 0.009, 6.0, 12.0)
+    var action_start_x := view.x - margin - 3.0 * action_w - 2.0 * action_gap
+    var action_start_y := view.y - margin - 3.0 * action_h - 2.0 * action_gap
     if is_instance_valid(health_label):
-        health_label.position = Vector2(24, 18)
+        health_label.position = Vector2(margin, margin)
+        health_label.size = Vector2(minf(230.0, view.x * 0.25), 36)
     if is_instance_valid(broadcast_label):
-        broadcast_label.position = Vector2(24, 62)
-        broadcast_label.size = Vector2(minf(560.0, view.x * 0.48), 42)
+        broadcast_label.position = Vector2(margin, margin + 40)
+        broadcast_label.size = Vector2(minf(520.0, view.x * 0.43), 38)
     if is_instance_valid(ammo_label):
-        ammo_label.position = Vector2(24, 106)
-        ammo_label.size = Vector2(440, 34)
+        ammo_label.position = Vector2(margin, margin + 78)
+        ammo_label.size = Vector2(minf(420.0, view.x * 0.40), 30)
     if is_instance_valid(message_label):
-        message_label.position = Vector2(view.x * 0.5 - 300.0, 18)
+        message_label.position = Vector2(view.x * 0.5 - minf(300.0, view.x * 0.22), margin)
+        message_label.size.x = minf(600.0, view.x * 0.44)
     if is_instance_valid(save_button):
-        save_button.position = Vector2(24, 154)
+        save_button.position = Vector2(margin, margin + 116)
+        save_button.size = Vector2(104, 42)
     if is_instance_valid(load_button):
-        load_button.position = Vector2(154, 154)
+        load_button.position = Vector2(margin + 112, margin + 116)
+        load_button.size = Vector2(104, 42)
     if is_instance_valid(settings_button):
-        settings_button.position = Vector2(24, 210)
+        settings_button.position = Vector2(margin, margin + 164)
+        settings_button.size = Vector2(104, 42)
     if is_instance_valid(inventory_button):
-        inventory_button.position = Vector2(24, 266)
+        inventory_button.position = Vector2(margin + 112, margin + 164)
+        inventory_button.size = Vector2(120, 42)
     if is_instance_valid(inventory_panel):
-        inventory_panel.position = Vector2(24, 322)
+        inventory_panel.position = Vector2(margin, margin + 212)
+        inventory_panel.size = Vector2(minf(330.0, view.x * 0.42), minf(300.0, view.y * 0.48))
     if is_instance_valid(settings_panel):
-        settings_panel.position = Vector2(24, 322)
+        settings_panel.position = Vector2(margin, margin + 212)
+        settings_panel.size = Vector2(minf(300.0, view.x * 0.38), minf(150.0, view.y * 0.32))
+    var action_names := ["ARA (E)", "İLK YARDIM", "VUR", "MOLOTOF", "ATEŞ", "DOLDUR", "FENER"]
+    var action_index := 0
+    for child in root.get_children():
+        if child is Button and action_names.has(child.text):
+            var col := action_index % 3
+            var row := int(action_index / 3)
+            child.size = Vector2(action_w, action_h)
+            child.position = Vector2(action_start_x + col * (action_w + action_gap), action_start_y + row * (action_h + action_gap))
+            child.add_theme_font_size_override("font_size", 11 if compact else 13)
+            action_index += 1
 
 func _on_broadcast_changed(message: String, urgent: bool) -> void:
     if is_instance_valid(broadcast_label):
