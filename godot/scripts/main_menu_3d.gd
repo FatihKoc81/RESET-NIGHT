@@ -85,6 +85,7 @@ func _build_shell() -> void:
     var hero_center := CenterContainer.new()
     hero_center.name = "CenteredLogo"
     hero_center.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+    hero_center.custom_minimum_size.y = 230.0
     hero_center.add_child(_hero_art)
     _content.add_child(hero_center)
 
@@ -113,7 +114,11 @@ func _layout_menu() -> void:
     if is_instance_valid(_content):
         _content.custom_minimum_size.x = maxf(280.0, size.x - 28.0)
     if is_instance_valid(_hero_art):
-        _hero_art.custom_minimum_size.y = clampf((size.x - 28.0) * 0.56, 160.0, 340.0)
+        # Keep the title artwork compact and visible on portrait phones.
+        var hero_height := clampf(size.y * 0.235, 176.0, 250.0)
+        _hero_art.custom_minimum_size = Vector2(maxf(250.0, size.x - 52.0), hero_height)
+        _hero_art.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+        _hero_art.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 
 func _label(value: String, font_size: int, color: String) -> Label:
     var label := Label.new()
