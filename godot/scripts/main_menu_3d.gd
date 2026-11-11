@@ -74,7 +74,7 @@ func _build_shell() -> void:
     _hero_art = TextureRect.new()
     _hero_art.name = "ResetNightTitleArtwork"
     _hero_art.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-    _hero_art.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT
+    _hero_art.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
     _hero_art.size_flags_horizontal = Control.SIZE_EXPAND_FILL
     var artwork_b64 := FileAccess.get_file_as_string("res://assets/reset_night_title.webp.b64").strip_edges()
     if not artwork_b64.is_empty():
@@ -82,7 +82,11 @@ func _build_shell() -> void:
         var artwork_error := artwork.load_webp_from_buffer(Marshalls.base64_to_raw(artwork_b64))
         if artwork_error == OK:
             _hero_art.texture = ImageTexture.create_from_image(artwork)
-    _content.add_child(_hero_art)
+    var hero_center := CenterContainer.new()
+    hero_center.name = "CenteredLogo"
+    hero_center.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+    hero_center.add_child(_hero_art)
+    _content.add_child(hero_center)
 
     var subtitle := _label("ÇEVRİMİÇİ / ÇEVRİMDIŞI DESTEKLİ", 13, "#d4c4bd")
     subtitle.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -92,7 +96,7 @@ func _build_shell() -> void:
     _content.add_child(line)
     _body = VBoxContainer.new()
     _body.name = "MenuPage"
-    _body.add_theme_constant_override("separation", 10)
+    _body.add_theme_constant_override("separation", 14)
     _body.size_flags_horizontal = Control.SIZE_EXPAND_FILL
     _content.add_child(_body)
 
@@ -140,15 +144,17 @@ func _add_page_title(value: String) -> void:
 
 func _show_home() -> void:
     _clear_page()
+    var top_space := Control.new()
+    top_space.custom_minimum_size.y = 24
+    _body.add_child(top_space)
     _add_page_title("GECE ÇÖKTÜ. HAYATTA KAL.")
-    _add_button("🎮  OYNA / MOD SEÇİMİ", _show_modes, 64)
-    _add_button("👤  KARAKTER SEÇİMİ / EŞYALAR", _show_characters)
-    _add_button("⚙  AYARLAR", _show_settings)
-    _add_button("🏆  LİDERLİK TABLOSU", _show_leaderboard)
-    _continue_button = _add_button("▣  KAYITLI OYUNA DEVAM ET", _continue_game)
+    _add_button("🎮  OYNA / MOD SEÇİMİ", _show_modes, 76)
+    _add_button("👤  KARAKTER SEÇİMİ / EŞYALAR", _show_characters, 76)
+    _add_button("⚙  AYARLAR", _show_settings, 76)
+    _add_button("🏆  LİDERLİK TABLOSU", _show_leaderboard, 76)
+    _continue_button = _add_button("▣  KAYITLI OYUNA DEVAM ET", _continue_game, 76)
     _continue_button.disabled = not FileAccess.file_exists("user://save_game.dat")
-    _update_button = _add_button("⬇  GÜNCELLEMEYİ KONTROL ET", _check_for_updates, 50)
-    _add_button("✕  ÇIKIŞ", _exit_game, 46)
+    _add_button("✕  ÇIKIŞ", _exit_game, 68)
 
 func _check_for_updates() -> void:
     if not is_instance_valid(_update_request) or _update_request.get_http_client_status() != HTTPClient.STATUS_DISCONNECTED:
@@ -345,7 +351,9 @@ func _show_settings() -> void:
     sensitivity.value_changed.connect(_set_touch_sensitivity)
     _body.add_child(sensitivity)
     _body.add_child(_label("Grafik profili: Mobil uyumlu GL Compatibility (Godot proje ayarı).", 12, "#c4b9b4"))
-    _add_button("←  ANA MENÜ", _show_home, 46)
+    _add_page_title("UYGULAMA")
+    _update_button = _add_button("⬇  GÜNCELLEMEYİ KONTROL ET", _check_for_updates, 72)
+    _add_button("←  ANA MENÜ", _show_home, 64)
 
 func _set_master_volume(value: float) -> void:
     var bus := AudioServer.get_bus_index("Master")
