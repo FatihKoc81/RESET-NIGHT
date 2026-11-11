@@ -20,13 +20,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Install Java prerequisites
-        shell: bash
-        run: |
-          apt-get update
-          apt-get install -y openjdk-17-jdk curl unzip
-          JAVA_HOME="$(dirname "$(dirname "$(readlink -f "$(command -v java)")")")"
-          echo "JAVA_HOME=$JAVA_HOME" >> "$GITHUB_ENV"
+      - name: Install Java 17 without container apt repositories
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
 
       - name: Install Android SDK 34 and matching build tools
         uses: android-actions/setup-android@v3
@@ -89,7 +87,7 @@ jobs:
         with:
           tag_name: godot-android-latest
           name: RESET NIGHT Godot 3D Android
-          body: "Godot 4.3 native 3D Android APK. Package: com.fatihkoc.resetnight.godot3d. Version 1.4.7 (12)."
+          body: "Godot 4.3 native 3D Android APK. Package: com.fatihkoc.resetnight.godot3d. Version 1.4.8 (13)."
           files: RESET-NIGHT-GODOT-Android.apk
           make_latest: false
           fail_on_unmatched_files: true
