@@ -4,13 +4,14 @@ const GAME_SCENE := "res://scenes/maps/Map3D.tscn"
 const BUILDER = preload("res://scripts/ui_asset_builder.gd")
 const PORT := 2456
 const UPDATE_RELEASE_API := "https://api.github.com/repos/FatihKoc81/RESET-NIGHT/releases/tags/godot-android-latest"
-const CURRENT_VERSION_CODE := 16
+const CURRENT_VERSION_CODE := 17
 const UPDATE_FILE := "user://reset-night-update.apk"
 
 var _body: VBoxContainer
 var _notice: Label
 var _content: VBoxContainer
 var _hero_art: TextureRect
+var _hero_fallback: Label
 var _continue_button: Button
 var _join_address: LineEdit
 var _lobby_status: Label
@@ -77,16 +78,26 @@ func _build_shell() -> void:
     _hero_art.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
     _hero_art.size_flags_horizontal = Control.SIZE_EXPAND_FILL
     var artwork_b64 := FileAccess.get_file_as_string("res://assets/reset_night_title.webp.b64").strip_edges()
+    var artwork_loaded := false
     if not artwork_b64.is_empty():
         var artwork := Image.new()
         var artwork_error := artwork.load_webp_from_buffer(Marshalls.base64_to_raw(artwork_b64))
-        if artwork_error == OK:
+        if artwork_error == OK and artwork.get_width() > 0 and artwork.get_height() > 0:
             _hero_art.texture = ImageTexture.create_from_image(artwork)
+            artwork_loaded = true
+    _hero_art.visible = artwork_loaded
+    _hero_fallback = _label("RESET NIGHT", 38, "#d9c4b2")
+    _hero_fallback.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+    _hero_fallback.add_theme_color_override("font_shadow_color", Color("#8b2028"))
+    _hero_fallback.add_theme_constant_override("shadow_offset_x", 2)
+    _hero_fallback.add_theme_constant_override("shadow_offset_y", 3)
+    _hero_fallback.visible = not artwork_loaded
     var hero_center := CenterContainer.new()
     hero_center.name = "CenteredLogo"
     hero_center.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-    hero_center.custom_minimum_size.y = 230.0
+    hero_center.custom_minimum_size.y = 224.0
     hero_center.add_child(_hero_art)
+    hero_center.add_child(_hero_fallback)
     _content.add_child(hero_center)
 
     var subtitle := _label("ÇEVRİMİÇİ / ÇEVRİMDIŞI DESTEKLİ", 13, "#d4c4bd")
@@ -115,10 +126,12 @@ func _layout_menu() -> void:
         _content.custom_minimum_size.x = maxf(280.0, size.x - 28.0)
     if is_instance_valid(_hero_art):
         # Keep the title artwork compact and visible on portrait phones.
-        var hero_height := clampf(size.y * 0.235, 176.0, 250.0)
+        var hero_height := clampf(size.y * 0.19, 156.0, 224.0)
         _hero_art.custom_minimum_size = Vector2(maxf(250.0, size.x - 52.0), hero_height)
         _hero_art.size_flags_horizontal = Control.SIZE_EXPAND_FILL
         _hero_art.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+        if is_instance_valid(_hero_fallback):
+            _hero_fallback.custom_minimum_size = Vector2(maxf(250.0, size.x - 52.0), 112.0)
 
 func _label(value: String, font_size: int, color: String) -> Label:
     var label := Label.new()
