@@ -3,6 +3,9 @@ extends Control
 const GAME_SCENE := "res://scenes/maps/Map3D.tscn"
 const BUILDER = preload("res://scripts/ui_asset_builder.gd")
 const PORT := 2456
+const UPDATE_RELEASE_API := "https://api.github.com/repos/FatihKoc81/RESET-NIGHT/releases/tags/godot-android-latest"
+const CURRENT_VERSION_CODE := 9
+const UPDATE_FILE := "user://reset-night-update.apk"
 
 var _body: VBoxContainer
 var _notice: Label
@@ -11,6 +14,10 @@ var _continue_button: Button
 var _join_address: LineEdit
 var _lobby_status: Label
 var _selected_character := "leader"
+var _update_request: HTTPRequest
+var _download_request: HTTPRequest
+var _update_button: Button
+var _update_asset_url := ""
 var _settings := ConfigFile.new()
 
 func _ready() -> void:
@@ -18,6 +25,15 @@ func _ready() -> void:
     _settings.load("user://settings.cfg")
     _selected_character = str(_settings.get_value("player", "character", "leader"))
     _build_shell()
+    _update_request = HTTPRequest.new()
+    _update_request.timeout = 30.0
+    _update_request.request_completed.connect(_on_update_check_completed)
+    add_child(_update_request)
+    _download_request = HTTPRequest.new()
+    _download_request.timeout = 180.0
+    _download_request.download_file = UPDATE_FILE
+    _download_request.request_completed.connect(_on_update_download_completed)
+    add_child(_download_request)
     _show_home()
     get_viewport().size_changed.connect(_layout_menu)
     _layout_menu()
@@ -117,7 +133,73 @@ func _show_home() -> void:
     _add_button("🏆  LİDERLİK TABLOSU", _show_leaderboard)
     _continue_button = _add_button("▣  KAYITLI OYUNA DEVAM ET", _continue_game)
     _continue_button.disabled = not FileAccess.file_exists("user://save_game.dat")
+    _update_button = _add_button("⬇  GÜNCELLEMEYİ KONTROL ET", _check_for_updates, 50)
     _add_button("✕  ÇIKIŞ", _exit_game, 46)
+
+func _check_for_updates() -> void:
+    if not is_instance_valid(_update_request) or _update_request.get_http_client_status() != HTTPClient.STATUS_DISCONNECTED:
+        _notice.text = "Güncelleme kontrolü zaten sürüyor."
+        return
+    _update_button.disabled = true
+    _update_button.text = "GÜNCELLEME KONTROL EDİLİYOR..."
+    _notice.text = "Sunucu sürümü kontrol ediliyor."
+    var headers := PackedStringArray(["Accept: application/vnd.github+json", "User-Agent: RESET-NIGHT-Android"])
+    var error := _update_request.request(UPDATE_RELEASE_API, headers)
+    if error != OK:
+        _finish_update_check("Güncelleme sunucusuna bağlanılamadı.")
+
+func _on_update_check_completed(result: int, response_code: int, _headers: PackedStringArray, body: PackedByteArray) -> void:
+    if result != HTTPRequest.RESULT_SUCCESS or response_code != 200:
+        _finish_update_check("Güncelleme kontrolü başarısız. İnternet bağlantını kontrol et.")
+        return
+    var release = JSON.parse_string(body.get_string_from_utf8())
+    if not release is Dictionary:
+        _finish_update_check("Sunucudan geçerli sürüm bilgisi alınamadı.")
+        return
+    var version_text := str(release.get("body", ""))
+    var version_regex := RegEx.new()
+    version_regex.compile("Version\\s+([0-9.]+)\\s*\\(([0-9]+)\\)")
+    var version_match := version_regex.search(version_text)
+    if version_match == null:
+        _finish_update_check("Sürüm bilgisi eksik; güvenlik için indirme başlatılmadı.")
+        return
+    var remote_code := int(version_match.get_string(2))
+    if remote_code <= CURRENT_VERSION_CODE:
+        _finish_update_check("Uygulama güncel. (Sürüm %s)" % version_match.get_string(1))
+        return
+    var assets: Array = release.get("assets", [])
+    for asset in assets:
+        if str(asset.get("name", "")) == "RESET-NIGHT-GODOT-Android.apk":
+            _update_asset_url = str(asset.get("browser_download_url", ""))
+            break
+    if _update_asset_url.is_empty():
+        _finish_update_check("Yeni sürüm bulundu ancak APK dosyası henüz yayınlanmamış.")
+        return
+    _update_button.text = "GÜNCELLEME İNDİRİLİYOR..."
+    _notice.text = "Yeni sürüm %s bulundu. İndiriliyor..." % version_match.get_string(1)
+    var error := _download_request.request(_update_asset_url)
+    if error != OK:
+        _finish_update_check("Güncelleme indirmesi başlatılamadı.")
+
+func _on_update_download_completed(result: int, response_code: int, _headers: PackedStringArray, _body: PackedByteArray) -> void:
+    if result != HTTPRequest.RESULT_SUCCESS or response_code != 200 or not FileAccess.file_exists(UPDATE_FILE):
+        _finish_update_check("APK indirilemedi. Daha sonra tekrar deneyebilirsin.")
+        return
+    _notice.text = "İndirme tamamlandı. Android güvenlik kısıtlamaları nedeniyle APK'yı dosya yöneticisinden manuel kurman gerekebilir."
+    _update_button.text = "YÜKLEME BAŞLATILIYOR..."
+    # NOT: OS.shell_open(file://) Android 10+ üzerinde kısıtlıdır. 
+    # Gerçek cihaz testi yapılmamıştır; sistem paket yükleyicisi için 'android.intent.action.VIEW' 
+    # gereklidir. Godot 4.3'te bu, özel bir Android eklentisi (Plugin) gerektirir.
+    # Güvenli sınır: Dosya yolunu kullanıcıya bildir.
+    OS.shell_open(ProjectSettings.globalize_path(UPDATE_FILE).get_base_dir())
+    _update_button.disabled = false
+    _update_button.text = "GÜNCELLEMEYİ TEKRAR KONTROL ET"
+
+func _finish_update_check(message: String) -> void:
+    _notice.text = message
+    if is_instance_valid(_update_button):
+        _update_button.disabled = false
+        _update_button.text = "GÜNCELLEMEYİ TEKRAR KONTROL ET"
 
 func _show_modes() -> void:
     _clear_page()
