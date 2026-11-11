@@ -87,7 +87,7 @@ jobs:
         with:
           tag_name: godot-android-latest
           name: RESET NIGHT Godot 3D Android
-          body: "Godot 4.3 native 3D Android APK. Package: com.fatihkoc.resetnight.godot3d. Version 1.4.8 (13)."
+          body: "Godot 4.3 native 3D Android APK. Package: com.fatihkoc.resetnight.godot3d. Version 1.4.9 (14)."
           files: RESET-NIGHT-GODOT-Android.apk
           make_latest: false
           fail_on_unmatched_files: true
