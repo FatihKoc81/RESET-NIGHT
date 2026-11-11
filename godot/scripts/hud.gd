@@ -45,6 +45,35 @@ func _ready() -> void:
     _build_inventory_panel(root)
     _build_save_controls(root)
     _build_settings_controls(root)
+    root.resized.connect(_layout_hud.bind(root))
+    _layout_hud(root)
+
+func _layout_hud(root: Control) -> void:
+    var view := root.size
+    if view.x <= 0.0 or view.y <= 0.0:
+        return
+    if is_instance_valid(health_label):
+        health_label.position = Vector2(24, 18)
+    if is_instance_valid(broadcast_label):
+        broadcast_label.position = Vector2(24, 62)
+        broadcast_label.size = Vector2(minf(560.0, view.x * 0.48), 42)
+    if is_instance_valid(ammo_label):
+        ammo_label.position = Vector2(24, 106)
+        ammo_label.size = Vector2(440, 34)
+    if is_instance_valid(message_label):
+        message_label.position = Vector2(view.x * 0.5 - 300.0, 18)
+    if is_instance_valid(save_button):
+        save_button.position = Vector2(24, 154)
+    if is_instance_valid(load_button):
+        load_button.position = Vector2(154, 154)
+    if is_instance_valid(settings_button):
+        settings_button.position = Vector2(24, 210)
+    if is_instance_valid(inventory_button):
+        inventory_button.position = Vector2(24, 266)
+    if is_instance_valid(inventory_panel):
+        inventory_panel.position = Vector2(24, 322)
+    if is_instance_valid(settings_panel):
+        settings_panel.position = Vector2(24, 322)
 
 func _on_broadcast_changed(message: String, urgent: bool) -> void:
     if is_instance_valid(broadcast_label):
