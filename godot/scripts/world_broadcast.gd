@@ -61,8 +61,7 @@ func _set_status(value: String) -> void:
 
 func _announce(value: String, urgent: bool) -> void:
     broadcast_changed.emit(value, urgent)
-    if DisplayServer.has_feature(DisplayServer.FEATURE_TEXT_TO_SPEECH):
-        DisplayServer.tts_speak(value, "tr", 1.0, 1.0, 1.0, 0, true)
+    DisplayServer.tts_speak(value, "", 1.0, 1.0, 1.0, 0, true)
 
 func current_status() -> String:
     var local_seconds := posmod(int(Time.get_unix_time_from_system()) + TURKEY_OFFSET_SECONDS, 86400)
