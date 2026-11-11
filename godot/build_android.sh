@@ -58,5 +58,5 @@ APKSIGNER="$(find "$ANDROID_HOME/build-tools" -type f -name apksigner | sort -V 
 "$APKSIGNER" verify --verbose "$OUTPUT_APK"
 "$APKSIGNER" verify --print-certs "$OUTPUT_APK"
 echo "APK_PACKAGE=com.fatihkoc.resetnight.godot3d"
-echo "APK_VERSION=1.4.4 (9)"
+echo "APK_VERSION=1.4.5 (10)"
 echo "APK_PATH=$OUTPUT_APK"
