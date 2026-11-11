@@ -11,8 +11,8 @@
 background_mode = 1
 background_color = Color(0.019608, 0.023529, 0.031373, 1)
 ambient_light_source = 3
-ambient_light_color = Color(0.24, 0.27, 0.34, 1)
-ambient_light_energy = 0.9
+ambient_light_color = Color(0.34, 0.38, 0.46, 1)
+ambient_light_energy = 1.2
 tonemap_mode = 2
 fog_enabled = true
 fog_light_color = Color(0.13, 0.15, 0.20, 1)
@@ -27,7 +27,7 @@ environment = SubResource("Environment_night")
 [node name="Moonlight" type="DirectionalLight3D" parent="."]
 rotation_degrees = Vector3(-52, -28, 0)
 light_color = Color(0.42, 0.48, 0.62, 1)
-light_energy = 1.15
+light_energy = 1.45
 shadow_enabled = true
 directional_shadow_max_distance = 35.0
 
