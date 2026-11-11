@@ -4,7 +4,7 @@ const GAME_SCENE := "res://scenes/maps/Map3D.tscn"
 const BUILDER = preload("res://scripts/ui_asset_builder.gd")
 const PORT := 2456
 const UPDATE_RELEASE_API := "https://api.github.com/repos/FatihKoc81/RESET-NIGHT/releases/tags/godot-android-latest"
-const CURRENT_VERSION_CODE := 13
+const CURRENT_VERSION_CODE := 14
 const UPDATE_FILE := "user://reset-night-update.apk"
 
 var _body: VBoxContainer
