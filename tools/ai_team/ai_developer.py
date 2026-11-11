@@ -198,13 +198,11 @@ def main():
         })
 
         if review["approved"]:
-            diff = list(difflib.unified_diff(
-                original.splitlines(True), proposed.splitlines(True),
-                fromfile="a/" + TARGET, tofile="b/" + TARGET
-            ))
-            if not diff:
+            if proposed == original:
                 raise RuntimeError("No effective diff")
-            pathlib.Path("ai-generated.patch").write_text("".join(diff), encoding="utf-8")
+            # Store the reviewed complete file. Avoid fragile unified-patch parsing
+            # when model output contains unusual line endings or patch-like text.
+            pathlib.Path("ai-proposed-file.gd").write_text(proposed, encoding="utf-8")
             report.update({
                 "gemini_model": gemini_model, "reviewer_model": review_model,
                 "review": review, "approved_attempt": attempt,
