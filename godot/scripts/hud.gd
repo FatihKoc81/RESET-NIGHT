@@ -12,6 +12,7 @@ var load_button: Button
 var settings_button: Button
 var settings_panel: PanelContainer
 var sensitivity_slider: HSlider
+var broadcast_label: Label
 
 func _ready() -> void:
     add_to_group("hud")
@@ -22,6 +23,12 @@ func _ready() -> void:
     var ui_builder = preload("res://scripts/ui_asset_builder.gd").new()
     root.theme = ui_builder.setup_theme()
     add_child(root)
+    broadcast_label = _label(root, "NORMAL HAYAT", Vector2(22, 60), Vector2(460, 42), 17)
+    broadcast_label.add_theme_color_override("font_color", Color("#f2c078"))
+    var world_clock := get_node_or_null("/root/WorldBroadcast")
+    if is_instance_valid(world_clock):
+        broadcast_label.text = world_clock.current_status()
+        world_clock.broadcast_changed.connect(_on_broadcast_changed)
     health_label = _label(root, "SAĞLIK 100", Vector2(22, 18), Vector2(220, 54), 22)
     ammo_label = _label(root, "POMPALI 2 / 20  •  MOLOTOF 3", Vector2(22, 96), Vector2(360, 34), 15)
     message_label = _label(root, "RESET NIGHT", Vector2(0, 18), Vector2(600, 48), 20)
@@ -38,6 +45,11 @@ func _ready() -> void:
     _build_inventory_panel(root)
     _build_save_controls(root)
     _build_settings_controls(root)
+
+func _on_broadcast_changed(message: String, urgent: bool) -> void:
+    if is_instance_valid(broadcast_label):
+        broadcast_label.text = message
+        broadcast_label.add_theme_color_override("font_color", Color("#ff5b55") if urgent else Color("#f2c078"))
 
 func _build_save_controls(root: Control) -> void:
     save_button = Button.new()
