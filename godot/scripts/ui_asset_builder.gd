@@ -23,14 +23,14 @@ func _style(fill: Color, edge: Color, width: int) -> StyleBoxFlat:
     s.bg_color = fill
     s.border_color = edge
     s.set_border_width_all(width)
-    s.corner_radius_top_left = 6
-    s.corner_radius_top_right = 2
-    s.corner_radius_bottom_left = 2
-    s.corner_radius_bottom_right = 6
+    s.corner_radius_top_left = 16
+    s.corner_radius_top_right = 16
+    s.corner_radius_bottom_left = 16
+    s.corner_radius_bottom_right = 16
     s.content_margin_left = 18
     s.content_margin_right = 18
-    s.content_margin_top = 10
-    s.content_margin_bottom = 10
+    s.content_margin_top = 15
+    s.content_margin_bottom = 15
     return s
 
 func _panel() -> StyleBoxFlat:
@@ -38,6 +38,8 @@ func _panel() -> StyleBoxFlat:
     s.bg_color = Color("#11151b")
     s.border_color = Color("#6f2929")
     s.set_border_width_all(2)
-    s.corner_radius_top_left = 8
-    s.corner_radius_bottom_right = 8
+    s.corner_radius_top_left = 16
+    s.corner_radius_top_right = 16
+    s.corner_radius_bottom_left = 16
+    s.corner_radius_bottom_right = 16
     return s
