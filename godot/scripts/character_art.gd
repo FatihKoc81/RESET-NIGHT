@@ -1,6 +1,6 @@
 extends Node3D
 
-@export_enum("leader","vanguard","walker") var archetype := "leader"
+@export_enum("leader","vanguard","raider") var archetype := "leader"
 @export var animated := true
 var la: Node3D
 var ra: Node3D
