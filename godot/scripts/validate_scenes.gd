@@ -5,7 +5,7 @@ const SCENES := [
     "res://scenes/maps/Map3D.tscn",
     "res://scenes/player/Player3D.tscn",
     "res://scenes/ui/MobileControls.tscn",
-    "res://scenes/enemies/ZombieWalker3D.tscn",
+    "res://scenes/enemies/HumanRaider.tscn",
     "res://scenes/enemies/Enemy.tscn"
 ]
 
