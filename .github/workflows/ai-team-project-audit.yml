@@ -1,6 +1,9 @@
 name: RESET NIGHT AI Team Project Audit
 
 on:
+  push:
+    branches: [ main ]
+    paths: [ '.github/workflows/ai-team-project-audit.yml' ]
   workflow_dispatch:
 
 permissions:
