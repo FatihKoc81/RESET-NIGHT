@@ -13,6 +13,8 @@ var settings_button: Button
 var settings_panel: PanelContainer
 var sensitivity_slider: HSlider
 var broadcast_label: Label
+var _last_inventory_text := ""
+var _last_ammo_text := ""
 
 func _ready() -> void:
     add_to_group("hud")
@@ -211,9 +213,14 @@ func _toggle_inventory() -> void:
 func _refresh_inventory() -> void:
     if not is_instance_valid(inventory_label) or not is_instance_valid(player):
         return
+    if not is_instance_valid(inventory_panel) or not inventory_panel.visible:
+        return
     var bag := player.get_node_or_null("InventoryManager")
     if is_instance_valid(bag):
-        inventory_label.text = bag.get_inventory_text()
+        var inventory_text: String = bag.get_inventory_text()
+        if inventory_text != _last_inventory_text:
+            _last_inventory_text = inventory_text
+            inventory_label.text = inventory_text
 
 func _label(parent: Control, text_value: String, pos: Vector2, size: Vector2, font_size: int) -> Label:
     var label := Label.new()
@@ -257,8 +264,12 @@ func show_message(value: String) -> void:
 func _process(_delta: float) -> void:
     if Input.is_action_just_pressed("toggle_inventory") and is_instance_valid(inventory_panel):
         _toggle_inventory()
-    _refresh_inventory()
+    if is_instance_valid(inventory_panel) and inventory_panel.visible:
+        _refresh_inventory()
     if not is_instance_valid(player):
         player = get_tree().get_first_node_in_group("player")
     if is_instance_valid(player) and is_instance_valid(ammo_label):
-        ammo_label.text = "POMPALI %d / %d  •  MOLOTOF %d" % [player.shotgun_ammo, player.shotgun_reserve, int(player.get_node("InventoryManager").inventory.get("molotov", 0))]
+        var ammo_text := "POMPALI %d / %d  •  MOLOTOF %d" % [player.shotgun_ammo, player.shotgun_reserve, int(player.get_node("InventoryManager").inventory.get("molotov", 0))]
+        if ammo_text != _last_ammo_text:
+            _last_ammo_text = ammo_text
+            ammo_label.text = ammo_text
