@@ -6,6 +6,7 @@ signal peer_left(peer_id: int)
 
 const DEFAULT_PORT := 2456
 var game_mode := "solo"
+var player_side := "defense"
 var is_host := false
 var status_text := "Lobi bağlantısı yok."
 var connected_peers: Array[int] = []
