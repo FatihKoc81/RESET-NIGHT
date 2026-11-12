@@ -167,9 +167,13 @@ func _build_settings_controls(root: Control) -> void:
     column.add_child(sensitivity_slider)
 
 func _toggle_settings() -> void:
-    settings_panel.visible = not settings_panel.visible
-    if settings_panel.visible and is_instance_valid(inventory_panel):
+    if not is_instance_valid(settings_panel):
+        return
+    var opening := not settings_panel.visible
+    settings_panel.visible = opening
+    if opening and is_instance_valid(inventory_panel):
         inventory_panel.visible = false
+        settings_panel.move_to_front()
 
 func _on_sensitivity_changed(value: float) -> void:
     var manager := get_node_or_null("/root/MobileInputManager")
@@ -207,8 +211,15 @@ func _craft(recipe_id: String) -> void:
     _refresh_inventory()
 
 func _toggle_inventory() -> void:
-    inventory_panel.visible = not inventory_panel.visible
-    _refresh_inventory()
+    if not is_instance_valid(inventory_panel):
+        return
+    var opening := not inventory_panel.visible
+    inventory_panel.visible = opening
+    if opening:
+        if is_instance_valid(settings_panel):
+            settings_panel.visible = false
+        inventory_panel.move_to_front()
+        _refresh_inventory()
 
 func _refresh_inventory() -> void:
     if not is_instance_valid(inventory_label) or not is_instance_valid(player):
@@ -260,6 +271,15 @@ func show_message(value: String) -> void:
         await get_tree().create_timer(1.8).timeout
         if is_instance_valid(message_label):
             message_label.text = "RESET NIGHT"
+
+func _notification(what: int) -> void:
+    if what == NOTIFICATION_WM_GO_BACK_REQUEST:
+        if is_instance_valid(settings_panel) and settings_panel.visible:
+            settings_panel.visible = false
+            get_viewport().set_input_as_handled()
+        elif is_instance_valid(inventory_panel) and inventory_panel.visible:
+            inventory_panel.visible = false
+            get_viewport().set_input_as_handled()
 
 func _process(_delta: float) -> void:
     if Input.is_action_just_pressed("toggle_inventory") and is_instance_valid(inventory_panel):
