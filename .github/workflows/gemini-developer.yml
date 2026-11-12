@@ -1,0 +1,70 @@
+name: RESET NIGHT Gemini Autonomous Developer
+on:
+  push:
+    branches: [ main ]
+    paths: [ '.github/workflows/gemini-developer.yml' ]
+  workflow_dispatch:
+    inputs:
+      task:
+        description: "Gemini'ye verilecek geliştirme görevi"
+        required: true
+        type: string
+        default: "Önce projeyi denetle. En kritik doğrulanabilir Godot hatasını güvenli şekilde düzelt, headless kontrolleri ve Android derlemesini çalıştır, PR hazırla."
+permissions:
+  contents: write
+  pull-requests: write
+  issues: read
+concurrency:
+  group: reset-night-gemini-developer-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  develop:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      GEMINI_CLI_TRUST_WORKSPACE: "true"
+      GH_TOKEN: ${{ github.token }}
+      GITHUB_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: true
+      - name: Create isolated development branch
+        run: |
+          git config user.name "Gemini Project Lead"
+          git config user.email "gemini-project-lead@users.noreply.github.com"
+          BRANCH="ai/reset-night-${GITHUB_RUN_ID}"
+          git switch -c "$BRANCH"
+          echo "AI_BRANCH=$BRANCH" >> "$GITHUB_ENV"
+      - name: Install Godot 4 headless
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y godot4 || true
+          if ! command -v godot4 >/dev/null 2>&1; then
+            echo "Godot 4 headless binary is unavailable in this runner; Gemini must still run static checks and report this limitation."
+          fi
+      - name: Gemini implements and tests
+        uses: google-github-actions/run-gemini-cli@v0
+        with:
+          gemini_api_key: ${{ secrets.GEMINI_API_KEY }}
+          gemini_cli_version: latest
+          prompt: |
+            You are the autonomous senior Godot 4 developer and technical lead for RESET NIGHT. Read GEMINI.md fully first.
+            TASK: ${{ inputs.task || 'Audit the project, choose the highest-impact verified defect, fix it safely, run available headless checks and prepare a PR.' }}
+            You may edit source/assets in this isolated branch, run tests and commit only via the workflow. Never push to main, merge PRs, publish releases, or change secrets/signing credentials.
+            Preserve the two-faction concept and all non-negotiable requirements in GEMINI.md. This is NOT a zombie game. Do not add undead/infected/monster enemies. Keep Turkish UI terms including EKİP. Do not fake playable systems using menu labels or primitive placeholders.
+            Inspect Godot scenes, scripts, imports, project settings and Android export config. Fix a verified high-impact issue with small changes; do not perform a speculative wholesale rewrite. Run Godot headless parse/import/scene checks if possible. Report exactly which tests ran and which did not.
+            Make changes directly in the checked-out workspace. If no safe change is justified, make no changes. Finish with a concise Turkish summary, changed files, tests, risks and whether APK export was actually successful.
+      - name: Commit, push and open pull request
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if [ -z "$(git status --porcelain)" ]; then
+            echo "Gemini made no changes; no PR is needed."
+            exit 0
+          fi
+          git add -A
+          git commit -m "AI: implement verified RESET NIGHT improvements"
+          git push --set-upstream origin "$AI_BRANCH"
+          gh pr create --repo "$GITHUB_REPOSITORY" --base main --head "$AI_BRANCH" --title "AI development: RESET NIGHT improvements" --body "Gemini autonomous development run $GITHUB_RUN_ID. Review source diff and CI results before merging. Main was not modified."
