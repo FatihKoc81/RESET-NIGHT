@@ -4,7 +4,7 @@ const GAME_SCENE := "res://scenes/maps/Map3D.tscn"
 const BUILDER = preload("res://scripts/ui_asset_builder.gd")
 const PORT := 2456
 const UPDATE_RELEASE_API := "https://api.github.com/repos/FatihKoc81/RESET-NIGHT/releases/tags/godot-android-latest"
-const CURRENT_VERSION_CODE := 19
+const CURRENT_VERSION_CODE := 20
 const UPDATE_FILE := "user://reset-night-update.apk"
 
 var _body: VBoxContainer
@@ -16,6 +16,7 @@ var _continue_button: Button
 var _join_address: LineEdit
 var _lobby_status: Label
 var _selected_character := "leader"
+var _selected_side := "defense"
 var _update_request: HTTPRequest
 var _download_request: HTTPRequest
 var _update_button: Button
@@ -29,6 +30,7 @@ func _ready() -> void:
     theme = BUILDER.new().setup_theme()
     _settings.load("user://settings.cfg")
     _selected_character = str(_settings.get_value("player", "character", "leader"))
+    _selected_side = str(_settings.get_value("player", "side", "defense"))
     _build_shell()
     _update_request = HTTPRequest.new()
     _update_request.timeout = 30.0
@@ -166,7 +168,7 @@ func _show_home() -> void:
     top_space.custom_minimum_size.y = 24
     _body.add_child(top_space)
     _add_page_title("GECE ÇÖKTÜ. HAYATTA KAL.")
-    _add_button("🎮  OYNA / MOD SEÇİMİ", _show_modes, 76)
+    _add_button("🎮  OYNA / TARAFINI SEÇ", _show_sides, 76)
     _add_button("👤  KARAKTER SEÇİMİ / EŞYALAR", _show_characters, 76)
     _add_button("⚙  AYARLAR", _show_settings, 76)
     _add_button("🏆  LİDERLİK TABLOSU", _show_leaderboard, 76)
@@ -239,13 +241,32 @@ func _finish_update_check(message: String) -> void:
         _update_button.disabled = false
         _update_button.text = "GÜNCELLEMEYİ TEKRAR KONTROL ET"
 
+func _show_sides() -> void:
+    _clear_page()
+    _add_page_title("TARAFINI SEÇ")
+    _body.add_child(_label("Bu gece hangi taraftasın? Seçimin oyun tarzını belirler.", 14, "#c4b9b4"))
+    _add_button("🛡  SAVUNMA\nGüvenli bölgeleri koru • Barikat kur • Kaynak topla", func(): _select_side("defense"), 88)
+    _add_button("⚔  SALDIRI\nSavunma hatlarını aş • Bölgeyi ele geçir", func(): _select_side("attack"), 88)
+    _add_button("←  ANA MENÜ", _show_home, 46)
+
+func _select_side(value: String) -> void:
+    _selected_side = value
+    _settings.set_value("player", "side", value)
+    _settings.save("user://settings.cfg")
+    var manager := get_node_or_null("/root/NetworkManager")
+    if is_instance_valid(manager):
+        manager.player_side = value
+    _show_modes()
+
 func _show_modes() -> void:
     _clear_page()
-    _add_page_title("OYUN MODLARI")
-    _add_button("💀  SOLO HAYATTA KALMA\nTek kişilik • Dalga tabanlı gece koruması", _start_solo, 76)
-    _add_button("👥  CO-OP HAYATTA KALMA\n2–4 kişilik • Çevrimiçi / Yerel ağ", _show_coop, 76)
-    _add_button("📜  HİKAYE & GÖREV MODU\nŞehirden kaçış • Bölge temizleme", _start_story, 76)
-    _add_button("←  ANA MENÜ", _show_home, 46)
+    var side_title := "SAVUNMA TARAFI" if _selected_side == "defense" else "SALDIRI TARAFI"
+    _add_page_title(side_title + " • OYUN MODLARI")
+    _body.add_child(_label("Seçilen taraf: " + ("Savunma" if _selected_side == "defense" else "Saldırı"), 14, "#d4c4bd"))
+    _add_button("💀  SOLO\nTek kişilik oyun", _start_solo, 76)
+    _add_button("👥  CO-OP\n2–4 kişilik • Çevrimiçi / Yerel ağ", _show_coop, 76)
+    _add_button("📜  HİKÂYE & GÖREV\nŞehir görevleri ve bölge hedefleri", _start_story, 76)
+    _add_button("←  TARAF SEÇİMİNE DÖN", _show_sides, 46)
 
 func _start_solo() -> void:
     _start_map("solo")
@@ -260,6 +281,7 @@ func _start_map(mode: String) -> void:
     var manager := get_node_or_null("/root/NetworkManager")
     if is_instance_valid(manager):
         manager.game_mode = mode
+        manager.player_side = _selected_side
         if mode != "coop":
             manager.close_session()
     var error := get_tree().change_scene_to_file(GAME_SCENE)
