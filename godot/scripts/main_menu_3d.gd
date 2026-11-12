@@ -4,7 +4,7 @@ const GAME_SCENE := "res://scenes/maps/Map3D.tscn"
 const BUILDER = preload("res://scripts/ui_asset_builder.gd")
 const PORT := 2456
 const UPDATE_RELEASE_API := "https://api.github.com/repos/FatihKoc81/RESET-NIGHT/releases/tags/godot-android-latest"
-const CURRENT_VERSION_CODE := 21
+const CURRENT_VERSION_CODE := 22
 const UPDATE_FILE := "user://reset-night-update.apk"
 
 var _body: VBoxContainer
@@ -244,9 +244,9 @@ func _finish_update_check(message: String) -> void:
 func _show_sides() -> void:
     _clear_page()
     _add_page_title("TARAFINI SEÇ")
-    _body.add_child(_label("Bu gece hangi taraftasın? Seçimin oyun tarzını belirler.", 14, "#c4b9b4"))
-    _add_button("🛡  SAVUNMA\nGüvenli bölgeleri koru • Barikat kur • Kaynak topla", func(): _select_side("defense"), 88)
-    _add_button("⚔  SALDIRI\nSavunma hatlarını aş • Bölgeyi ele geçir", func(): _select_side("attack"), 88)
+    _body.add_child(_label("Bu gece hangi taraftasın? Karşındaki düşmanlar zombiler değil, acımasız insan çeteleri.", 14, "#c4b9b4"))
+    _add_button("🛡  SAVUNMA\nGüvenli bölgeleri koru • Barikat kur • İnsan saldırganlara karşı koy", func(): _select_side("defense"), 88)
+    _add_button("⚔  SALDIRI\nAcımasız insan çetesine katıl • Savunma hatlarını aş • Bölgeyi ele geçir", func(): _select_side("attack"), 88)
     _add_button("←  ANA MENÜ", _show_home, 46)
 
 func _select_side(value: String) -> void:
@@ -264,7 +264,7 @@ func _show_modes() -> void:
     _add_page_title(side_title + " • OYUN MODLARI")
     _body.add_child(_label("Seçilen taraf: " + ("Savunma" if _selected_side == "defense" else "Saldırı"), 14, "#d4c4bd"))
     _add_button("💀  SOLO\nTek kişilik oyun", _start_solo, 76)
-    _add_button("👥  CO-OP\n2–4 kişilik • Çevrimiçi / Yerel ağ", _show_coop, 76)
+    _add_button("👥  EKİP\n2–4 kişilik • Çevrimiçi / Yerel ağ", _show_coop, 76)
     _add_button("📜  HİKÂYE & GÖREV\nŞehir görevleri ve bölge hedefleri", _start_story, 76)
     _add_button("←  TARAF SEÇİMİNE DÖN", _show_sides, 46)
 
@@ -290,7 +290,7 @@ func _start_map(mode: String) -> void:
 
 func _show_coop() -> void:
     _clear_page()
-    _add_page_title("CO-OP LOBİSİ")
+    _add_page_title("EKİP LOBİSİ")
     _body.add_child(_label("2–4 oyuncu • Aynı Wi-Fi / LAN veya yönlendirilebilir IP", 13, "#c4b9b4"))
     _add_button("ODA OLUŞTUR (HOST)", _host_game, 58)
     _join_address = LineEdit.new()
