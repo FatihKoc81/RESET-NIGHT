@@ -25,16 +25,16 @@ position = Vector3(0.34, 1.18, -0.38)
 [node name="Gun3D" parent="WeaponPivot" instance=ExtResource("5")]
 
 [node name="CameraPivot" type="Node3D" parent="."]
-position = Vector3(0, 1.7, 0)
-rotation_degrees = Vector3(-17, 0, 0)
+position = Vector3(0, 2.0, 0)
+rotation_degrees = Vector3(-8, 0, 0)
 
 [node name="SpringArm3D" type="SpringArm3D" parent="CameraPivot"]
-spring_length = 5.2
+spring_length = 4.2
 margin = 0.25
 
 [node name="Camera3D" type="Camera3D" parent="CameraPivot/SpringArm3D"]
 current = true
-fov = 72.0
+fov = 78.0
 
 [node name="Flashlight" type="SpotLight3D" parent="CameraPivot"]
 position = Vector3(0, 0, -0.35)
