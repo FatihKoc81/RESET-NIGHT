@@ -23,6 +23,7 @@ var invulnerable := 0.0
 var yaw := 0.0
 var hud: Node
 var flashlight_on := true
+var player_side := "defense"
 var nearby_loot: Node3D
 
 @onready var camera: Camera3D = $CameraPivot/SpringArm3D/Camera3D
@@ -31,6 +32,9 @@ var nearby_loot: Node3D
 func _ready() -> void:
     add_to_group("player")
     _apply_saved_character()
+    var session_manager := get_node_or_null("/root/NetworkManager")
+    if is_instance_valid(session_manager):
+        player_side = str(session_manager.player_side)
     health = max_health
     call_deferred("_find_hud")
     flashlight_on = flashlight.is_on
