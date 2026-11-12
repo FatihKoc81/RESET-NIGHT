@@ -12,8 +12,8 @@ func _ready() -> void:
     _spawn_rng.randomize()
 
 func _process(delta: float) -> void:
-    var world_clock := get_node_or_null("/root/WorldBroadcast")
-    if is_instance_valid(world_clock) and not world_clock.is_purge_night:
+    var session_manager := get_node_or_null("/root/NetworkManager")
+    if is_instance_valid(session_manager) and str(session_manager.player_side) != "defense":
         return
     timer -= delta
     if timer > 0.0:
