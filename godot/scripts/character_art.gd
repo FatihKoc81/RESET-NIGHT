@@ -20,19 +20,18 @@ func _ready() -> void:
 func _process(delta: float) -> void:
     if not animated:
         return
-    phase += delta * (1.6 if archetype == "walker" else 2.6)
+    phase += delta * (2.2 if archetype == "raider" else 2.6)
     attack_pose_time = maxf(0.0, attack_pose_time - delta)
-    var stride := sin(phase) * (0.09 if archetype == "walker" else 0.2)
+    var stride := sin(phase) * (0.16 if archetype == "raider" else 0.2)
     ll.rotation.x = stride
     rl.rotation.x = -stride
-    if archetype == "walker":
-        var bite_pose := 0.75 if attack_pose_time > 0.0 else 0.0
-        la.rotation.x = -1.0 - bite_pose + stride * 0.2
-        ra.rotation.x = -1.0 - bite_pose + stride * 0.2
-        la.rotation.z = -0.22 + sin(phase) * 0.03
-        ra.rotation.z = 0.22 - sin(phase) * 0.03
-        rotation.z = sin(phase * 0.5) * 0.045
-        head.rotation.z = sin(phase * 0.7) * 0.06
+    if archetype == "raider":
+        var strike_pose := 0.95 if attack_pose_time > 0.0 else 0.0
+        la.rotation.x = -0.18 + stride - strike_pose * 0.35
+        ra.rotation.x = -0.20 - stride - strike_pose
+        la.rotation.z = -0.08
+        ra.rotation.z = 0.08
+        head.rotation.z = sin(phase * 0.7) * 0.025
     elif archetype == "leader":
         la.rotation.x = -stride * 0.4
         ra.rotation.x = -0.65 + stride * 0.2
@@ -84,15 +83,16 @@ func build() -> void:
         var gun := box("BackShotgun", Vector3(0.13, 0.92, 0.13), mat("#363432"), Vector3(0.20, 1.45, 0.19))
         gun.rotation_degrees.z = -12
     else:
-        box("TornShirt", Vector3(0.60, 0.42, 0.25), mat("#45413e"), Vector3(0, 1.25, -0.02))
-        box("TornHemA", Vector3(0.20, 0.15, 0.12), dark, Vector3(-0.18, 0.94, -0.02))
-        box("TornHemB", Vector3(0.18, 0.12, 0.12), dark, Vector3(0.18, 0.92, -0.02))
-        box("CheekWound", Vector3(0.07, 0.10, 0.025), wound, Vector3(-0.16, 1.70, -0.20))
-        box("NeckWound", Vector3(0.12, 0.05, 0.025), wound, Vector3(0.04, 1.49, -0.19))
-        la.rotation.x = -1.0
-        ra.rotation.x = -1.0
-        la.rotation.z = -0.22
-        ra.rotation.z = 0.22
+        # Human raider: layered street clothes, face covering and improvised weapon.
+        box("RaiderHoodie", Vector3(0.60, 0.48, 0.27), mat("#3b2928"), Vector3(0, 1.25, -0.02))
+        box("RaiderVest", Vector3(0.54, 0.34, 0.08), mat("#17191d"), Vector3(0, 1.28, -0.19))
+        box("FaceCover", Vector3(0.30, 0.12, 0.045), mat("#6e2026"), Vector3(0, 1.62, -0.225))
+        box("ShoulderPadL", Vector3(0.22, 0.16, 0.22), dark, Vector3(-0.37, 1.48, 0))
+        box("ShoulderPadR", Vector3(0.22, 0.16, 0.22), dark, Vector3(0.37, 1.48, 0))
+        box("UtilityPouch", Vector3(0.15, 0.18, 0.10), mat("#5a4938"), Vector3(0.20, 1.02, -0.19))
+        cylinder("RaiderClub", 0.045, 0.065, 0.78, mat("#57483c"), Vector3(0.48, 1.22, -0.08))
+        la.rotation.x = -0.12
+        ra.rotation.x = -0.2
 
 func limb(label: String, pos: Vector3, radius: float, length: float, material: Material) -> Node3D:
     var pivot := Node3D.new()
