@@ -27,8 +27,8 @@ func _initialize() -> void:
     var foreground := Image.create(432, 432, false, Image.FORMAT_RGBA8)
     foreground.fill(Color(0, 0, 0, 0))
     var safe_art := source.duplicate()
-    safe_art.resize(250, 140, Image.INTERPOLATE_LANCZOS)
-    foreground.blit_rect(safe_art, Rect2i(0, 0, 250, 140), Vector2i(91, 146))
+    safe_art.resize(390, 219, Image.INTERPOLATE_LANCZOS)
+    foreground.blit_rect(safe_art, Rect2i(0, 0, 390, 219), Vector2i(21, 106))
     if not _save(foreground, "res://assets/reset_night_adaptive_foreground.png"):
         quit(1)
         return
@@ -43,13 +43,13 @@ func _initialize() -> void:
     mono.fill(Color(0, 0, 0, 0))
     var mono_art := source.duplicate()
     mono_art.convert(Image.FORMAT_RGBA8)
-    mono_art.resize(250, 140, Image.INTERPOLATE_LANCZOS)
+    mono_art.resize(390, 219, Image.INTERPOLATE_LANCZOS)
     for y in range(mono_art.get_height()):
         for x in range(mono_art.get_width()):
             var px: Color = mono_art.get_pixel(x, y)
             var luminance: float = (px.r + px.g + px.b) / 3.0
             mono_art.set_pixel(x, y, Color(1, 1, 1, px.a * luminance))
-    mono.blit_rect(mono_art, Rect2i(0, 0, 250, 140), Vector2i(91, 146))
+    mono.blit_rect(mono_art, Rect2i(0, 0, 390, 219), Vector2i(21, 106))
     if not _save(mono, "res://assets/reset_night_adaptive_monochrome.png"):
         quit(1)
         return
