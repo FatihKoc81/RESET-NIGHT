@@ -1,6 +1,12 @@
 name: RESET NIGHT Web Syntax Check
 
 on:
+  push:
+    branches: [ main ]
+    paths:
+      - '**/*.js'
+      - '**/*.html'
+      - '.github/workflows/pr-check.yml'
   pull_request:
     branches: [ main ]
     paths:
