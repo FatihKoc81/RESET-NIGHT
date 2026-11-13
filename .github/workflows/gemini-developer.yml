@@ -218,4 +218,8 @@ jobs:
           fi
           git commit -m "AI: implement verified RESET NIGHT improvements"
           git push --set-upstream origin "$AI_BRANCH"
-          gh pr create --repo "$GITHUB_REPOSITORY" --base main --head "$AI_BRANCH" --title "AI Development Team: RESET NIGHT" --body-file "$RUNNER_TEMP/ai-review.md"
+          if [ "${{ steps.gpt-review.outputs.status }}" = "unavailable" ]; then
+            gh pr create --draft --repo "$GITHUB_REPOSITORY" --base main --head "$AI_BRANCH" --title "AI Development Team: RESET NIGHT (ChatGPT review pending)" --body-file "$RUNNER_TEMP/ai-review.md"
+          else
+            gh pr create --repo "$GITHUB_REPOSITORY" --base main --head "$AI_BRANCH" --title "AI Development Team: RESET NIGHT" --body-file "$RUNNER_TEMP/ai-review.md"
+          fi
