@@ -87,6 +87,49 @@
     },
     sesDurdur: function () {
       if (window.speechSynthesis) window.speechSynthesis.cancel();
+    },
+
+    konusmayiBaslat: function (aralikMs) {
+      var self = this;
+      var aktif = true;
+      var bilinen = Object.create(null);
+      var bekleme = Math.max(5000, Number(aralikMs) || 12000);
+      function mesajListesi(data) {
+        if (Array.isArray(data)) return data;
+        if (data && Array.isArray(data.messages)) return data.messages;
+        if (data && Array.isArray(data.items)) return data.items;
+        if (data && Array.isArray(data.data)) return data.data;
+        return [];
+      }
+      function tur() {
+        if (!aktif) return;
+        self.mesajlariGetir().then(function (data) {
+          var messages = mesajListesi(data);
+          messages.forEach(function (m, index) {
+            var from = String(m.from || m.sender || m.project || "");
+            var to = String(m.to || "");
+            var content = String(m.content || m.message || m.text || "").trim();
+            var id = String(m.id || m.messageId || (from + "|" + content + "|" + index));
+            if (!content || from === "RESET-NIGHT" || (to && to !== "RESET-NIGHT") || bilinen[id]) return;
+            bilinen[id] = true;
+            self.seslendir(from + " diyor ki: " + content).catch(function () {});
+            self.sohbet("Sen RESET-NIGHT uygulamasının yapay zekâ asistanısın. " +
+              from + " uygulamasından şu mesaj geldi: " + content +
+              " Kısa, doğal ve Türkçe bir cevap ver. Yalnızca cevabı yaz.").then(function (answer) {
+                var reply = String(answer.response || answer.reply || answer.text || "").trim();
+                if (reply) {
+                  self.mesajGonder(from, reply).then(function () {
+                    self.seslendir("Yanıtım: " + reply).catch(function () {});
+                  }).catch(function () {});
+                }
+              }).catch(function () {});
+          });
+        }).catch(function () {}).then(function () {
+          if (aktif) setTimeout(tur, bekleme);
+        });
+      }
+      tur();
+      return function () { aktif = false; };
     }
   };
 
