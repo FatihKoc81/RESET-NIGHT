@@ -1,4 +1,4 @@
-name: RESET NIGHT Gemini Autonomous Developer
+name: AI Development Team — RESET NIGHT
 on:
   push:
     branches: [ main ]
@@ -34,7 +34,7 @@ jobs:
         run: |
           git config user.name "Gemini Project Lead"
           git config user.email "gemini-project-lead@users.noreply.github.com"
-          BRANCH="ai/reset-night-${GITHUB_RUN_ID}"
+          BRANCH="ai/reset-night-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
           git switch -c "$BRANCH"
           echo "AI_BRANCH=$BRANCH" >> "$GITHUB_ENV"
       - name: Install Godot 4 headless
@@ -49,15 +49,78 @@ jobs:
         with:
           gemini_api_key: ${{ secrets.GEMINI_API_KEY }}
           gemini_cli_version: latest
-          gemini_model: gemini-3.1-flash-lite-preview
+          gemini_model: gemini-3.1-flash-lite
           prompt: |
             You are the autonomous senior Godot 4 developer and technical lead for RESET NIGHT. Read GEMINI.md fully first.
             TASK: ${{ inputs.task || 'Audit the project, choose the highest-impact verified defect, fix it safely, run available headless checks and prepare a PR.' }}
             You may edit source/assets in this isolated branch, run tests and commit only via the workflow. Never push to main, merge PRs, publish releases, or change secrets/signing credentials.
             Preserve the two-faction concept and all non-negotiable requirements in GEMINI.md. This is NOT a zombie game. Do not add undead/infected/monster enemies. Keep Turkish UI terms including EKİP. Do not fake playable systems using menu labels or primitive placeholders.
             Inspect Godot scenes, scripts, imports, project settings and Android export config. Fix a verified high-impact issue with small changes; do not perform a speculative wholesale rewrite. Run Godot headless parse/import/scene checks if possible. Report exactly which tests ran and which did not.
-            Make changes directly in the checked-out workspace. If no safe change is justified, make no changes. Finish with a concise Turkish summary, changed files, tests, risks and whether APK export was actually successful.
+            Make changes directly in the checked-out workspace. If no safe change is justified, make no changes. Do not add generated CLI command packs, telemetry logs, or agent artifacts to the repository. Finish with a concise Turkish summary, changed files, tests, risks and whether APK export was actually successful.
+      - name: Gemini yan ürünlerini temizle
+        run: rm -rf .gemini/commands gemini-artifacts
+      - name: RESET NIGHT kaynak doğrulaması
+        run: |
+          set -euo pipefail
+          if command -v godot4 >/dev/null 2>&1; then
+            godot4 --headless --editor --path godot --quit
+          elif command -v godot >/dev/null 2>&1; then
+            godot --headless --editor --path godot --quit
+          else
+            echo "::warning::Godot doğrulayıcısı bulunamadı; sahne parse testi yapılmadı."
+          fi
+          find . -type f -name '*.js' -not -path './node_modules/*' -not -path './.git/*' -print0 | while IFS= read -r -d '' file; do node --check "$file"; done
+      - name: Güvenli değişiklikleri hazırla
+        run: |
+          git add -A
+          git reset -- .github/workflows
+          git diff --cached --check
+      - name: ChatGPT bağımsız kod denetimi
+        env:
+          OPENAI_API_KEY: \${{ secrets.OPENAI_API_KEY }}
+          OPENAI_MODEL: gpt-5-mini
+        run: |
+          node <<'NODE'
+          const fs = require('fs');
+          const { execFileSync } = require('child_process');
+          async function main() {
+            if (!process.env.OPENAI_API_KEY) throw new Error('OPENAI_API_KEY GitHub Secret eksik.');
+            const diff = execFileSync('git', ['diff', '--cached', '--no-ext-diff', '--unified=3'], { encoding: 'utf8', maxBuffer: 12 * 1024 * 1024 });
+            const reportPath = process.env.RUNNER_TEMP + '/ai-review.md';
+            if (!diff.trim()) {
+              fs.writeFileSync(reportPath, 'Uygulama kaynaklarında değişiklik oluşmadı. PR açılmadı.\\n');
+              return;
+            }
+            if (diff.length > 70000) throw new Error('Diff 70.000 karakteri aşıyor; kapsam küçültülmeli.');
+            const secretPattern = /(AIza[0-9A-Za-z_-]{25,}|-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----|gh[pousr]_[A-Za-z0-9]{20,}|sk-[A-Za-z0-9]{20,})/;
+            if (secretPattern.test(diff)) throw new Error('Diff içinde anahtara benzeyen gizli bilgi bulundu; PR durduruldu.');
+            const instructions = 'Bağımsız kıdemli yazılım denetçisisin. Git diffini güvenlik, veri kaybı, regresyon, runtime hatası ve test eksikleri açısından incele. KÂTİP ise finansal verinin cihaz dışına çıkmamasını; RESET NIGHT ise Godot 4 3D ve zombi olmayan insan düşman şartlarını denetle. Gerçek test yapılmadıysa yapılmış gibi sayma. İlk satır yalnızca APPROVED veya REJECTED olsun; devamında Türkçe bulguları yaz. Kritik/yüksek önemde doğrulanmış sorun varsa REJECTED ver.';
+            const response = await fetch('https://api.openai.com/v1/responses', {
+              method: 'POST',
+              headers: { 'Authorization': 'Bearer ' + process.env.OPENAI_API_KEY, 'Content-Type': 'application/json' },
+              body: JSON.stringify({ model: process.env.OPENAI_MODEL, instructions, input: 'İncelenecek Git diff:\\n\\n' + diff, max_output_tokens: 3500 })
+            });
+            const data = await response.json();
+            if (!response.ok) throw new Error('OpenAI API ' + response.status + ': ' + JSON.stringify(data).slice(0, 1200));
+            const result = (data.output || []).flatMap(x => x.content || []).filter(x => x.type === 'output_text').map(x => x.text).join('\\n').trim();
+            if (!result) throw new Error('ChatGPT boş denetim yanıtı verdi; PR açılmadı.');
+            fs.writeFileSync(reportPath, '## ChatGPT bağımsız kod denetimi\\n\\n' + result + '\\n');
+            fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, '## ChatGPT bağımsız denetimi\\n\\n' + result + '\\n');
+            if (!/^APPROVED\\b/i.test(result)) throw new Error('ChatGPT onay vermedi; PR açılmadı.');
+          }
+          main().catch(e => { console.error(e); process.exit(1); });
+          NODE
       - name: Commit, push and open pull request
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if git diff --cached --quiet; then
+            echo "Doğrulanabilir uygulama kaynağı değişikliği yok; PR açılmadı."
+            exit 0
+          fi
+          git commit -m "AI: implement verified RESET NIGHT improvements"
+          git push --set-upstream origin "$AI_BRANCH"
+          gh pr create --repo "$GITHUB_REPOSITORY" --base main --head "$AI_BRANCH" --title "AI Development Team: RESET NIGHT" --body-file "$RUNNER_TEMP/ai-review.md"
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
