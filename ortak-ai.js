@@ -109,9 +109,9 @@
             var from = String(m.from || m.sender || m.project || "");
             var to = String(m.to || "");
             var rawContent = String(m.content || m.message || m.text || "").trim();
-            var depthMatch = rawContent.match(/^\\[\\[ORTAK_AI_TUR:(\\d+)\\]\\]\\s*/);
+            var depthMatch = rawContent.match(/^\[\[ORTAK_AI_TUR:(\d+)\]\]\s*/);
             var depth = depthMatch ? Number(depthMatch[1]) : 0;
-            var content = rawContent.replace(/^\\[\\[ORTAK_AI_TUR:\\d+\\]\\]\\s*/, "").trim();
+            var content = rawContent.replace(/^\[\[ORTAK_AI_TUR:\d+\]\]\s*/, "").trim();
             var id = String(m.id || m.messageId || (from + "|" + content + "|" + index));
             if (!content || depth >= 3 || from === "RESET-NIGHT" || (to && to !== "RESET-NIGHT") || bilinen[id]) return;
             bilinen[id] = true;
