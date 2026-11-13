@@ -159,10 +159,10 @@ jobs:
             fs.writeFileSync(reportPath, '## GLM 4.7 Flash bağımsız incelemesi\n\n' + text + '\n');
             fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, '## GLM 4.7 Flash incelemesi\n\n' + text + '\n');
             console.log('GLM_REVIEW_RESULT:\n' + text.slice(0, 3000));
-            if (/^APPROVED\\b/i.test(text)) {
-              fs.appendFileSync(process.env.GITHUB_OUTPUT, 'status=approved\\n');
+            if (/^APPROVED\b/i.test(text)) {
+              fs.appendFileSync(process.env.GITHUB_OUTPUT, 'status=approved\n');
             } else {
-              fs.appendFileSync(process.env.GITHUB_OUTPUT, 'status=rejected\\n');
+              fs.appendFileSync(process.env.GITHUB_OUTPUT, 'status=rejected\n');
               console.log('GLM bulguları ChatGPT tarafından da bağımsız doğrulanacak; PR kapısı kapalı kalacak.');
             }
             fs.appendFileSync(process.env.GITHUB_OUTPUT, 'status=approved\n');
@@ -183,8 +183,8 @@ jobs:
           async function main() {
             const reportPath = process.env.RUNNER_TEMP + '/chatgpt-review.md';
             if (!process.env.OPENAI_API_KEY) {
-              fs.writeFileSync(reportPath, 'ChatGPT API anahtarı bulunamadı. GLM onaylı değişiklikler yalnızca taslak PR olarak sunulacak.\\n');
-              fs.appendFileSync(process.env.GITHUB_OUTPUT, 'status=unavailable\\n');
+              fs.writeFileSync(reportPath, 'ChatGPT API anahtarı bulunamadı. GLM onaylı değişiklikler yalnızca taslak PR olarak sunulacak.\n');
+              fs.appendFileSync(process.env.GITHUB_OUTPUT, 'status=unavailable\n');
               return;
             }
             const diff = execFileSync('git', ['diff', '--cached', '--no-ext-diff', '--unified=3'], {
@@ -198,26 +198,26 @@ jobs:
             const response = await fetch('https://api.openai.com/v1/responses', {
               method: 'POST',
               headers: { 'Authorization': 'Bearer ' + process.env.OPENAI_API_KEY, 'Content-Type': 'application/json' },
-              body: JSON.stringify({ model: process.env.OPENAI_MODEL, instructions, input: 'İncelenecek Git diff:\\n\\n' + diff, max_output_tokens: 3500 })
+              body: JSON.stringify({ model: process.env.OPENAI_MODEL, instructions, input: 'İncelenecek Git diff:\n\n' + diff, max_output_tokens: 3500 })
             });
             const data = await response.json();
             if (!response.ok) {
               if (response.status === 401) {
-                fs.writeFileSync(reportPath, 'ChatGPT API anahtarı geçersiz veya iptal edilmiş görünüyor (HTTP 401). GLM bağımsız onay verdi; bu PR yalnızca taslak olarak açılacak. GitHub Actions Secret OPENAI_API_KEY yenilenmelidir.\\n');
-                fs.appendFileSync(process.env.GITHUB_OUTPUT, 'status=unavailable\\n');
+                fs.writeFileSync(reportPath, 'ChatGPT API anahtarı geçersiz veya iptal edilmiş görünüyor (HTTP 401). GLM bağımsız onay verdi; bu PR yalnızca taslak olarak açılacak. GitHub Actions Secret OPENAI_API_KEY yenilenmelidir.\n');
+                fs.appendFileSync(process.env.GITHUB_OUTPUT, 'status=unavailable\n');
                 console.log('ChatGPT API anahtarı 401 verdi; GLM onaylı taslak PR moduna geçildi.');
                 return;
               }
               throw new Error('OpenAI API ' + response.status + ': ' + JSON.stringify(data).slice(0, 1200));
             }
             const result = (data.output || []).flatMap(x => x.content || [])
-              .filter(x => x.type === 'output_text').map(x => x.text).join('\\n').trim();
+              .filter(x => x.type === 'output_text').map(x => x.text).join('\n').trim();
             if (!result) throw new Error('ChatGPT boş denetim yanıtı verdi; PR açılmadı.');
-            fs.writeFileSync(reportPath, '## ChatGPT bağımsız kod denetimi\\n\\n' + result + '\\n');
-            fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, '## ChatGPT bağımsız denetimi\\n\\n' + result + '\\n');
-            console.log('CHATGPT_REVIEW_RESULT:\\n' + result.slice(0, 3500));
-            if (!/^APPROVED\\b/i.test(result)) throw new Error('ChatGPT değişiklikleri onaylamadı; PR açılmadı.');
-            fs.appendFileSync(process.env.GITHUB_OUTPUT, 'status=approved\\n');
+            fs.writeFileSync(reportPath, '## ChatGPT bağımsız kod denetimi\n\n' + result + '\n');
+            fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, '## ChatGPT bağımsız denetimi\n\n' + result + '\n');
+            console.log('CHATGPT_REVIEW_RESULT:\n' + result.slice(0, 3500));
+            if (!/^APPROVED\b/i.test(result)) throw new Error('ChatGPT değişiklikleri onaylamadı; PR açılmadı.');
+            fs.appendFileSync(process.env.GITHUB_OUTPUT, 'status=approved\n');
           }
           main().catch(error => { console.error(error); process.exit(1); });
           NODE
@@ -228,7 +228,7 @@ jobs:
         run: |
           set -euo pipefail
           cp "$RUNNER_TEMP/glm-review.md" "$RUNNER_TEMP/ai-review.md"
-          printf '\\n\\n---\\n\\n' >> "$RUNNER_TEMP/ai-review.md"
+          printf '\n\n---\n\n' >> "$RUNNER_TEMP/ai-review.md"
           cat "$RUNNER_TEMP/chatgpt-review.md" >> "$RUNNER_TEMP/ai-review.md"
           if [ "$CHATGPT_STATUS" = "unavailable" ]; then
             echo "ChatGPT API geçici olarak kullanılamıyor; PR taslak olarak açılacak."
