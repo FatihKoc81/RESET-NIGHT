@@ -69,6 +69,24 @@
     },
     mesajlariGetir: function () {
       return request("/app/messages?project=" + encodeURIComponent(PROJECT), { method: "GET" });
+    },
+    seslendir: function (metin, dil) {
+      metin = String(metin || "").trim();
+      if (!metin) return Promise.reject(new Error("Seslendirilecek metin boş."));
+      if (!window.speechSynthesis || typeof window.SpeechSynthesisUtterance !== "function") {
+        return Promise.reject(new Error("Bu cihazın tarayıcısında sesli okuma desteklenmiyor."));
+      }
+      window.speechSynthesis.cancel();
+      return new Promise(function (resolve, reject) {
+        var utterance = new SpeechSynthesisUtterance(metin);
+        utterance.lang = dil || "tr-TR";
+        utterance.onend = function () { resolve(true); };
+        utterance.onerror = function (event) { reject(new Error(event.error || "Sesli okuma başarısız.")); };
+        window.speechSynthesis.speak(utterance);
+      });
+    },
+    sesDurdur: function () {
+      if (window.speechSynthesis) window.speechSynthesis.cancel();
     }
   };
 
