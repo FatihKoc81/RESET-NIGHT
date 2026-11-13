@@ -58,7 +58,10 @@ jobs:
             Inspect Godot scenes, scripts, imports, project settings and Android export config. Fix a verified high-impact issue with small changes; do not perform a speculative wholesale rewrite. Run Godot headless parse/import/scene checks if possible. Report exactly which tests ran and which did not.
             Make changes directly in the checked-out workspace. If no safe change is justified, make no changes. Do not add generated CLI command packs, telemetry logs, or agent artifacts to the repository. Finish with a concise Turkish summary, changed files, tests, risks and whether APK export was actually successful.
       - name: Gemini yan ürünlerini temizle
-        run: rm -rf .gemini/commands gemini-artifacts
+        run: |
+          rm -rf .gemini/commands gemini-artifacts
+          find . -type d -name __pycache__ -prune -exec rm -rf {} +
+          find . -type f -name '*.pyc' -delete
       - name: RESET NIGHT kaynak doğrulaması
         run: |
           set -euo pipefail
@@ -72,10 +75,18 @@ jobs:
           find . -type f -name '*.js' -not -path './node_modules/*' -not -path './.git/*' -print0 | while IFS= read -r -d '' file; do node --check "$file"; done
       - name: Güvenli değişiklikleri hazırla
         run: |
+          set -euo pipefail
           git add -A
           git reset -- .github/workflows
+          git diff --cached --name-only -z | while IFS= read -r -d '' file; do
+            case "$file" in
+              *.gd|*.tscn|*.tres|*.cfg|*.json|*.md|*.js|*.html|*.css|*.xml) ;;
+              *) git reset -- "$file" ;;
+            esac
+          done
           git diff --cached --check
       - name: GLM 4.7 Flash bağımsız incelemesi
+        id: glm-review
         env:
           AI_PROJECT: RESET-NIGHT
           ALLOWED_PATH_PATTERN: '\.(gd|tscn|tres|cfg|json|md|js|html|css|xml)$'
@@ -92,12 +103,18 @@ jobs:
             return data;
           }
           async function main() {
-            const files = execFileSync('git', ['diff', '--cached', '--name-only'], { encoding: 'utf8' })
+            const allFiles = execFileSync('git', ['diff', '--cached', '--name-only'], { encoding: 'utf8' })
               .split(/\r?\n/).map(x => x.trim()).filter(Boolean);
-            if (!files.length) throw new Error('GLM incelemesi için kaynak dosya farkı yok.');
             const pattern = new RegExp(process.env.ALLOWED_PATH_PATTERN, 'i');
-            const blocked = files.filter(file => !pattern.test(file));
-            if (blocked.length) throw new Error('Gizlilik/güvenlik nedeniyle inceleme kapsamı dışı dosya var: ' + blocked.join(', '));
+            const files = allFiles.filter(file => pattern.test(file));
+            const ignored = allFiles.filter(file => !pattern.test(file));
+            if (ignored.length) console.log('GLM aktarımına dahil edilmeyen kaynak dışı dosyalar:', ignored.join(', '));
+            if (!files.length) {
+              fs.writeFileSync(process.env.RUNNER_TEMP + '/glm-review.md', 'Uygulama kaynaklarında değişiklik yok; Gemini denetimi tamamlandı ve PR gerekmiyor.\n');
+              fs.appendFileSync(process.env.GITHUB_OUTPUT, 'status=no_changes\n');
+              console.log('İncelenecek kaynak değişikliği yok; PR adımı güvenli şekilde atlanacak.');
+              return;
+            }
             const diff = execFileSync('git', ['diff', '--cached', '--no-ext-diff', '--unified=3', '--', ...files], {
               encoding: 'utf8', maxBuffer: 8 * 1024 * 1024
             });
@@ -143,11 +160,13 @@ jobs:
             fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, '## GLM 4.7 Flash incelemesi\n\n' + text + '\n');
             console.log('GLM_REVIEW_RESULT:\n' + text.slice(0, 3000));
             if (!/^APPROVED\b/i.test(text)) throw new Error('GLM değişiklikleri onaylamadı; PR açılmadı.');
+            fs.appendFileSync(process.env.GITHUB_OUTPUT, 'status=approved\n');
             console.log('GLM 4.7 Flash bağımsız incelemesi onayladı.');
           }
           main().catch(error => { console.error(error); process.exit(1); });
           NODE
       - name: ChatGPT bağımsız kod denetimi
+        if: steps.glm-review.outputs.status != 'no_changes'
         id: gpt-review
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
@@ -198,6 +217,7 @@ jobs:
           main().catch(error => { console.error(error); process.exit(1); });
           NODE
       - name: Üç yapay zekâ denetim raporunu birleştir
+        if: steps.glm-review.outputs.status != 'no_changes'
         env:
           CHATGPT_STATUS: ${{ steps.gpt-review.outputs.status }}
         run: |
