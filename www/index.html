@@ -193,4 +193,26 @@ addEventListener("contextmenu",e=>e.preventDefault());
 <script src="../firebase-config.js?v=20261113-2"></script>
 <script>document.documentElement.setAttribute("data-ai-project","RESET-NIGHT");</script>
 <script src="../ortak-ai.js?v=20261113-2"></script>
+<script>
+(function(){
+  function ekle(){
+    if(!window.OrtakAIMerkezi || document.getElementById("ortakAiKonusma")) return;
+    var b=document.createElement("button");
+    b.id="ortakAiKonusma";
+    b.type="button";
+    b.textContent="🤖 Diğer uygulamalarla konuş";
+    b.setAttribute("aria-label","Ortak AI konuşmasını başlat veya durdur");
+    b.style.cssText="position:fixed;right:12px;bottom:calc(14px + env(safe-area-inset-bottom));z-index:10000;border:1px solid #6ba7c9;border-radius:24px;padding:11px 15px;background:#102b43;color:#fff;font:700 13px system-ui;box-shadow:0 4px 16px #0008";
+    var stop=null;
+    b.addEventListener("click",function(){
+      if(stop){stop();stop=null;b.textContent="🤖 Diğer uygulamalarla konuş";return;}
+      try{stop=window.OrtakAIMerkezi.konusmayiBaslat(12000);b.textContent="🔊 Konuşma açık · Durdur";}
+      catch(e){b.textContent="Bağlantı kurulamadı";setTimeout(function(){b.textContent="🤖 Diğer uygulamalarla konuş"},2200);}
+    });
+    document.body.appendChild(b);
+  }
+  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",ekle);else ekle();
+  setTimeout(ekle,1500);
+})();
+</script>
 </body></html>
