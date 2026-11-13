@@ -1,0 +1,35 @@
+name: RESET NIGHT Web Syntax Check
+
+on:
+  pull_request:
+    branches: [ main ]
+    paths:
+      - '**/*.js'
+      - '**/*.html'
+      - '.github/workflows/pr-check.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  syntax:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: JavaScript sözdizimini doğrula
+        shell: bash
+        run: |
+          set -euo pipefail
+          find . -type f -name '*.js' -not -path './node_modules/*' -print0 | while IFS= read -r -d '' file; do
+            node --check "$file"
+          done
+      - name: Ortak AI köprüsünün HTML'e bağlandığını doğrula
+        run: |
+          grep -q 'firebase-auth-compat.js' www/index.html
+          grep -q 'firebase-config.js' www/index.html
+          grep -q 'ortak-ai.js' www/index.html
+          test -s ortak-ai.js
