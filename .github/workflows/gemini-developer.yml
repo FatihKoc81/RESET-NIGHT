@@ -165,8 +165,11 @@ jobs:
               fs.appendFileSync(process.env.GITHUB_OUTPUT, 'status=rejected\n');
               console.log('GLM bulguları ChatGPT tarafından da bağımsız doğrulanacak; PR kapısı kapalı kalacak.');
             }
-            fs.appendFileSync(process.env.GITHUB_OUTPUT, 'status=approved\n');
-            console.log('GLM 4.7 Flash bağımsız incelemesi onayladı.');
+            if (/^APPROVED\b/i.test(text)) {
+              console.log('GLM 4.7 Flash bağımsız incelemesi onayladı.');
+            } else {
+              console.log('GLM incelemesi reddetti; PR kapısı kapalı tutuldu.');
+            }
           }
           main().catch(error => { console.error(error); process.exit(1); });
           NODE
@@ -175,7 +178,7 @@ jobs:
         id: gpt-review
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          OPENAI_MODEL: gpt-5-mini
+          OPENAI_MODEL: gpt-6-astra
         run: |
           node <<'NODE'
           const fs = require('fs');
@@ -198,7 +201,7 @@ jobs:
             const response = await fetch('https://api.openai.com/v1/responses', {
               method: 'POST',
               headers: { 'Authorization': 'Bearer ' + process.env.OPENAI_API_KEY, 'Content-Type': 'application/json' },
-              body: JSON.stringify({ model: process.env.OPENAI_MODEL, instructions, input: 'İncelenecek Git diff:\n\n' + diff, max_output_tokens: 3500 })
+              body: JSON.stringify({ model: process.env.OPENAI_MODEL, reasoning: { effort: 'high' }, instructions, input: 'İncelenecek Git diff:\n\n' + diff, max_output_tokens: 5000 })
             });
             const data = await response.json();
             if (!response.ok) {
