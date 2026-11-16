@@ -37,3 +37,27 @@ func _ignite() -> void:
     $CollisionShape3D.disabled = false
     monitoring = true
     $FuseLight.light_energy = 3.0
+    _spawn_flames()
+
+func _spawn_flames() -> void:
+    var flames := CPUParticles3D.new()
+    flames.amount = 40
+    flames.lifetime = 0.9
+    flames.emission_shape = CPUParticles3D.EMISSION_SHAPE_SPHERE
+    flames.emission_sphere_radius = 1.6
+    flames.direction = Vector3.UP
+    flames.spread = 12.0
+    flames.initial_velocity_min = 1.2
+    flames.initial_velocity_max = 2.6
+    flames.gravity = Vector3.ZERO
+    var piece := BoxMesh.new()
+    piece.size = Vector3(0.22, 0.4, 0.22)
+    flames.mesh = piece
+    var fire_material := StandardMaterial3D.new()
+    fire_material.albedo_color = Color(1.0, 0.45, 0.08)
+    fire_material.emission_enabled = true
+    fire_material.emission = Color(1.0, 0.4, 0.05)
+    fire_material.emission_energy_multiplier = 2.5
+    flames.material_override = fire_material
+    add_child(flames)
+    flames.emitting = true

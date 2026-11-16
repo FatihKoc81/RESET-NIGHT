@@ -30,6 +30,14 @@ func _draw() -> void:
         var p := float(i) / 4.0
         draw_line(Vector2(radar.position.x + radar.size.x * p, radar.position.y + 8), Vector2(radar.position.x + radar.size.x * p, radar.end.y - 8), Color(0.7, 0.18, 0.2, 0.25), 1.0)
         draw_line(Vector2(radar.position.x + 8, radar.position.y + radar.size.y * p), Vector2(radar.end.x - 8, radar.position.y + radar.size.y * p), Color(0.7, 0.18, 0.2, 0.25), 1.0)
+    for enemy in get_tree().get_nodes_in_group("enemies"):
+        if not is_instance_valid(enemy):
+            continue
+        var rel: Vector3 = enemy.global_position - _player.global_position
+        var local_pos: Vector3 = _player.global_transform.basis.inverse() * rel
+        var dot := Vector2(local_pos.x, local_pos.z) * 2.4
+        if absf(dot.x) < 64.0 and absf(dot.y) < 64.0:
+            draw_circle(center + dot, 3.0, Color("#ffb347"))
     draw_circle(center, 4.0, Color("#ff4545"))
     draw_line(center, center + Vector2(0, -42), Color("#ff4545"), 2.0)
     draw_string(font, radar.position + Vector2(9, 17), "RADAR", HORIZONTAL_ALIGNMENT_LEFT, -1, 10, Color("#d9b8b8"))
