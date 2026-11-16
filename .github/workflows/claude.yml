@@ -37,13 +37,17 @@ jobs:
       id-token: write
       actions: read
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
         with:
           fetch-depth: 1
-      - uses: anthropics/claude-code-action@v1
+
+      - name: Run Claude Code
+        uses: anthropics/claude-code-action@v1
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
           claude_args: |
             --model claude-sonnet-5-5
             --max-turns 25
+            --allowedTools "Bash(unzip:*),Bash(cp:*),Bash(rm:*),Bash(ls:*),Bash(mkdir:*)"
