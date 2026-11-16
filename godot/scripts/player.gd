@@ -1,9 +1,10 @@
 extends CharacterBody3D
 
-const BAT_DAMAGE := 25.0
-const BAT_COOLDOWN := 1.2
-const BAT_RANGE := 2.4
-const STUN_CHANCE := 0.15
+const BAT_DAMAGE := 30.0
+const BAT_COOLDOWN := 0.7
+const BAT_RANGE := 2.8
+const STUN_CHANCE := 0.2
+const MAG_SIZE := 4
 const MOLOTOV_SCENE := preload("res://scenes/weapons/Molotov.tscn")
 const FIRST_AID_HEAL := 45.0
 const VANGUARD_VISUAL := preload("res://scenes/characters/VanguardSurvivor.tscn")
@@ -13,8 +14,8 @@ const VANGUARD_VISUAL := preload("res://scenes/characters/VanguardSurvivor.tscn"
 var health := 100.0
 var stamina := 100.0
 var bat_durability := 100.0
-var shotgun_ammo := 2
-var shotgun_reserve := 20
+var shotgun_ammo := 4
+var shotgun_reserve := 24
 var molotov_count := 3
 var bat_timer := 0.0
 var shotgun_timer := 0.0
@@ -25,6 +26,7 @@ var hud: Node
 var flashlight_on := true
 var player_side := "defense"
 var nearby_loot: Node3D
+var dead := false
 
 @onready var camera: Camera3D = $CameraPivot/SpringArm3D/Camera3D
 @onready var flashlight: SpotLight3D = $CameraPivot/Flashlight
@@ -43,6 +45,7 @@ func _ready() -> void:
         mobile_input.is_flashlight_on = flashlight_on
     $InventoryManager.add_item("spiked_bat", 1)
     $InventoryManager.add_item("molotov", molotov_count)
+    $InventoryManager.add_item("first_aid", 1)
     molotov_count = 0
     Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 
@@ -67,18 +70,27 @@ func _find_hud() -> void:
         hud.set_health(health, max_health)
 
 func _unhandled_input(event: InputEvent) -> void:
+    if dead:
+        return
     if event is InputEventMouseMotion and not OS.has_feature("mobile"):
         yaw -= event.relative.x * 0.003
         rotation.y = yaw
 
 func _physics_process(delta: float) -> void:
+    if dead:
+        velocity.x = 0.0
+        velocity.z = 0.0
+        if not is_on_floor():
+            velocity.y -= 20.0 * delta
+        move_and_slide()
+        return
     bat_timer = maxf(0.0, bat_timer - delta)
     shotgun_timer = maxf(0.0, shotgun_timer - delta)
     invulnerable = maxf(0.0, invulnerable - delta)
     if reload_timer > 0.0:
         reload_timer -= delta
         if reload_timer <= 0.0:
-            var amount := mini(2 - shotgun_ammo, shotgun_reserve)
+            var amount := mini(MAG_SIZE - shotgun_ammo, shotgun_reserve)
             shotgun_ammo += amount
             shotgun_reserve -= amount
             _notify("Pompalı dolduruldu")
@@ -115,7 +127,23 @@ func _physics_process(delta: float) -> void:
     if Input.is_action_just_pressed("use_first_aid"):
         use_first_aid()
 
+func add_ammo(amount: int) -> void:
+    shotgun_reserve += amount
+    _notify("+%d pompalı kartuşu" % amount)
+
+func add_first_aid(amount: int) -> void:
+    var overflow: int = $InventoryManager.add_item("first_aid", amount)
+    if overflow < amount:
+        _notify("İlk yardım kiti bulundu")
+
+func add_molotov(amount: int) -> void:
+    var overflow: int = $InventoryManager.add_item("molotov", amount)
+    if overflow < amount:
+        _notify("Molotof bulundu")
+
 func interact() -> void:
+    if dead:
+        return
     var nearest: Node3D
     var nearest_distance := 2.8
     for container in get_tree().get_nodes_in_group("loot_containers"):
@@ -137,6 +165,8 @@ func interact() -> void:
         _notify("Yakında aranabilir sandık yok")
 
 func use_first_aid() -> void:
+    if dead:
+        return
     if health >= max_health:
         _notify("Sağlığın zaten dolu")
         return
@@ -164,24 +194,30 @@ func toggle_flashlight() -> void:
     _notify("Fener açık — düşman görüşü arttı" if flashlight_on else "Fener kapalı — gizlilik aktif")
 
 func use_bat() -> void:
-    if bat_timer > 0.0:
+    if dead or bat_timer > 0.0:
         return
     bat_timer = BAT_COOLDOWN
     var visual := get_node_or_null("Visual")
     if is_instance_valid(visual) and visual.has_method("trigger_swing"):
         visual.trigger_swing()
-    var target := _nearest_enemy(BAT_RANGE)
+    var target := _nearest_enemy(BAT_RANGE, true)
+    var damage := BAT_DAMAGE
     if bat_durability <= 0.0:
-        _notify("Çivili sopa kırıldı")
-        return
+        damage = 8.0
     if target:
-        target.take_damage(BAT_DAMAGE)
-        bat_durability = maxf(0.0, bat_durability - 1.0)
+        target.take_damage(damage)
+        if target.has_method("knockback"):
+            target.knockback(global_position, 5.0)
+        bat_durability = maxf(0.0, bat_durability - 0.5)
         if randf() < STUN_CHANCE:
             target.stun(1.0)
-    _notify("Çivili sopa: 25 hasar")
+        _notify("Çivili sopa: %d hasar" % int(damage) if bat_durability > 0.0 else "Sopa kırıldı — yumruk: 8 hasar")
+    else:
+        _notify("Sopa havayı yardı")
 
 func throw_molotov() -> void:
+    if dead:
+        return
     if not $InventoryManager.consume("molotov"):
         _notify("Molotof kalmadı")
         return
@@ -192,10 +228,13 @@ func throw_molotov() -> void:
     _notify("Molotof: %d" % int($InventoryManager.inventory.get("molotov", 0)))
 
 func fire_shotgun() -> void:
-    if shotgun_timer > 0.0:
+    if dead or shotgun_timer > 0.0 or reload_timer > 0.0:
         return
     if shotgun_ammo <= 0:
-        _notify("Pompalı boş — doldur")
+        if shotgun_reserve > 0:
+            reload_shotgun()
+        else:
+            _notify("Mermi bitti!")
         return
     shotgun_timer = 0.8
     shotgun_ammo -= 1
@@ -205,13 +244,13 @@ func fire_shotgun() -> void:
     _notify("Pompalı %d / %d" % [shotgun_ammo, shotgun_reserve])
 
 func reload_shotgun() -> void:
-    if reload_timer > 0.0 or shotgun_ammo >= 2 or shotgun_reserve <= 0:
+    if dead or reload_timer > 0.0 or shotgun_ammo >= MAG_SIZE or shotgun_reserve <= 0:
         return
-    reload_timer = 2.5
+    reload_timer = 1.6
     _notify("Dolduruluyor…")
 
 func take_damage(amount: float) -> void:
-    if invulnerable > 0.0:
+    if dead or invulnerable > 0.0:
         return
     health = maxf(0.0, health - amount)
     invulnerable = 0.65
@@ -219,18 +258,43 @@ func take_damage(amount: float) -> void:
         _find_hud()
     if is_instance_valid(hud):
         hud.set_health(health, max_health)
+    var director := get_tree().get_first_node_in_group("director")
+    if is_instance_valid(director):
+        director.on_player_hit(amount)
     if health <= 0.0:
-        _notify("GECE KAZANDI — karakter düştü")
-    get_node_or_null("/root/SaveManager")?.save_game()
+        _die()
+        return
+    var saver := get_node_or_null("/root/SaveManager")
+    if is_instance_valid(saver):
+        saver.save_game()
 
-func _nearest_enemy(max_range: float) -> Node:
+func _die() -> void:
+    dead = true
+    _notify("ARINMA SENİ ALDI")
+    var visual := get_node_or_null("Visual") as Node3D
+    if visual != null:
+        visual.rotation_degrees.x = -80.0
+        visual.position.y = 0.25
+    var director := get_tree().get_first_node_in_group("director")
+    if is_instance_valid(director):
+        director.player_died()
+
+func _nearest_enemy(max_range: float, frontal: bool = false) -> Node:
     var nearest: Node
     var best := max_range
+    var forward := -global_transform.basis.z
     for enemy in get_tree().get_nodes_in_group("enemies"):
-        var distance := global_position.distance_to(enemy.global_position)
-        if distance < best:
-            best = distance
-            nearest = enemy
+        if not is_instance_valid(enemy):
+            continue
+        var to_enemy: Vector3 = enemy.global_position - global_position
+        to_enemy.y = 0.0
+        var distance := to_enemy.length()
+        if distance >= best:
+            continue
+        if frontal and distance > 0.6 and forward.dot(to_enemy / distance) < 0.2:
+            continue
+        best = distance
+        nearest = enemy
     return nearest
 
 func _notify(message: String) -> void:

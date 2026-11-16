@@ -1,6 +1,7 @@
 extends Node3D
 
 const LOOT_SCENE := preload("res://scenes/interactables/LootContainer3D.tscn")
+const DIRECTOR_SCRIPT := preload("res://scripts/game_director.gd")
 ## RESET NIGHT procedural 3D street kit. Primitive meshes are placeholders for final art assets.
 
 var asphalt: StandardMaterial3D
@@ -10,6 +11,10 @@ var brick: StandardMaterial3D
 var metal: StandardMaterial3D
 var car_paint: StandardMaterial3D
 var warm_glow: StandardMaterial3D
+var window_lit: StandardMaterial3D
+var window_dark: StandardMaterial3D
+var neon_red: StandardMaterial3D
+var dumpster_green: StandardMaterial3D
 
 func _ready() -> void:
     _make_materials()
@@ -17,7 +22,9 @@ func _ready() -> void:
     _build_street_props()
     _build_walls_and_fences()
     _build_loot_containers()
+    _build_city()
     _apply_mobile_visibility_ranges()
+    _start_director()
 
 func _make_materials() -> void:
     asphalt = _mat(Color(0.055, 0.063, 0.073), 0.95)
@@ -27,6 +34,14 @@ func _make_materials() -> void:
     metal = _mat(Color(0.095, 0.11, 0.12), 0.72, 0.45)
     car_paint = _mat(Color(0.12, 0.16, 0.17), 0.82, 0.2)
     warm_glow = _mat(Color(0.8, 0.24, 0.045), 0.5, 0.0, true)
+    window_lit = _mat(Color(0.95, 0.62, 0.22), 0.5, 0.0, true)
+    window_dark = _mat(Color(0.025, 0.03, 0.04), 0.25, 0.1)
+    neon_red = _mat(Color(1.0, 0.1, 0.22), 0.4, 0.0, true)
+    dumpster_green = _mat(Color(0.07, 0.15, 0.10), 0.7, 0.3)
+    _texture_material(asphalt, 0.22, 0.04)
+    _texture_material(sidewalk, 0.3, 0.06)
+    _texture_material(concrete, 0.3, 0.05)
+    _texture_material(brick, 0.45, 0.09)
 
 func _mat(color: Color, rough: float, metallic: float = 0.0, emission: bool = false) -> StandardMaterial3D:
     var material := StandardMaterial3D.new()
@@ -228,3 +243,89 @@ func _apply_mobile_visibility_ranges() -> void:
         mesh_instance.visibility_range_end = 70.0
         mesh_instance.visibility_range_end_margin = 10.0
         mesh_instance.visibility_range_fade_mode = GeometryInstance3D.VISIBILITY_RANGE_FADE_SELF
+
+# ------------------------------------------------------------ gerçekçilik / şehir
+
+func _noise_texture(frequency: float, as_normal: bool) -> NoiseTexture2D:
+    var noise := FastNoiseLite.new()
+    noise.noise_type = FastNoiseLite.TYPE_SIMPLEX_SMOOTH
+    noise.frequency = frequency
+    var texture := NoiseTexture2D.new()
+    texture.width = 256
+    texture.height = 256
+    texture.seamless = true
+    texture.noise = noise
+    if as_normal:
+        texture.as_normal_map = true
+        texture.bump_strength = 7.0
+    else:
+        var ramp := Gradient.new()
+        ramp.set_color(0, Color(0.45, 0.45, 0.45))
+        ramp.set_color(1, Color(1.0, 1.0, 1.0))
+        texture.color_ramp = ramp
+    return texture
+
+func _texture_material(material: StandardMaterial3D, tiling: float, frequency: float) -> void:
+    material.albedo_texture = _noise_texture(frequency, false)
+    material.normal_enabled = true
+    material.normal_texture = _noise_texture(frequency * 2.5, true)
+    material.normal_scale = 0.9
+    material.uv1_triplanar = true
+    material.uv1_scale = Vector3(tiling, tiling, tiling)
+
+func _build_city() -> void:
+    var props := $NavigationRegion3D/EnvironmentProps3D
+    # Sınır duvarları: oyuncu ve düşmanlar haritadan düşmesin.
+    _box(props, Vector3(0, 2.0, -34.6), Vector3(70, 4.0, 0.8), concrete, true)
+    _box(props, Vector3(0, 2.0, 34.6), Vector3(70, 4.0, 0.8), concrete, true)
+    _box(props, Vector3(-34.6, 2.0, 0), Vector3(0.8, 4.0, 70), concrete, true)
+    _box(props, Vector3(34.6, 2.0, 0), Vector3(0.8, 4.0, 70), concrete, true)
+    # Kuzey sırası (ön yüz güneye bakar) ve güney sırası (ön yüz kuzeye bakar).
+    _building(Vector3(-24, 0, -26), Vector3(12, 9, 10), 1.0)
+    _building(Vector3(-9, 0, -26), Vector3(12, 12, 10), 1.0)
+    _building(Vector3(6, 0, -26), Vector3(12, 8, 10), 1.0)
+    _building(Vector3(-22, 0, 26), Vector3(12, 10, 10), -1.0)
+    _building(Vector3(-6, 0, 26), Vector3(14, 12, 10), -1.0)
+    _building(Vector3(12, 0, 26), Vector3(12, 9, 10), -1.0)
+    _building(Vector3(27, 0, 26), Vector3(10, 11, 10), -1.0)
+    # Ek araçlar, çöp konteynerleri ve yanan variller
+    _car_wreck(Vector3(-20, 0, -8), 0.5)
+    _car_wreck(Vector3(18, 0, -5), -0.4)
+    _car_wreck(Vector3(1, 0, 12), 1.4)
+    _burning_barrel(Vector3(20, 0, -8))
+    _burning_barrel(Vector3(-20, 0, -15))
+    _box(props, Vector3(-13, 0.65, -15.5), Vector3(2.2, 1.3, 1.2), dumpster_green, true)
+    _box(props, Vector3(13, 0.65, 8.5), Vector3(2.2, 1.3, 1.2), dumpster_green, true)
+    for crate in [Vector3(8, 0.5, 12), Vector3(9.1, 0.5, 12.2), Vector3(8.5, 1.5, 12.1), Vector3(-9, 0.5, -3), Vector3(-26, 0.5, 4)]:
+        _box(props, crate, Vector3(1.0, 1.0, 1.0), brick, true)
+
+func _building(pos: Vector3, size: Vector3, front_sign: float) -> void:
+    var props := $NavigationRegion3D/EnvironmentProps3D
+    _box(props, pos + Vector3(0, size.y * 0.5, 0), size, brick, true)
+    _box(props, pos + Vector3(0, size.y + 0.15, 0), Vector3(size.x + 0.5, 0.3, size.z + 0.5), concrete, false)
+    var front_z := pos.z + front_sign * (size.z * 0.5 + 0.05)
+    var columns := maxi(1, int(size.x / 3.0))
+    var rows := maxi(1, int((size.y - 1.5) / 3.2))
+    for row in range(rows):
+        for column in range(columns):
+            var window_x := pos.x - size.x * 0.5 + (float(column) + 0.5) * (size.x / float(columns))
+            var window_y := 2.6 + float(row) * 3.2
+            var lit := randf() < 0.3
+            _add_box_mesh(props, Vector3(window_x, window_y, front_z), Vector3(1.3, 1.5, 0.1), window_lit if lit else window_dark, false)
+    var door_mat := metal
+    _add_box_mesh(props, Vector3(pos.x, 1.1, front_z), Vector3(1.4, 2.2, 0.12), door_mat, false)
+    if randf() < 0.5:
+        var sign_y := 4.2
+        _add_box_mesh(props, Vector3(pos.x + size.x * 0.3, sign_y, front_z + front_sign * 0.1), Vector3(2.2, 0.5, 0.1), neon_red, false)
+        var glow := OmniLight3D.new()
+        glow.position = Vector3(pos.x + size.x * 0.3, sign_y, front_z + front_sign * 1.5)
+        glow.light_color = Color(1.0, 0.1, 0.22)
+        glow.light_energy = 1.4
+        glow.omni_range = 8.0
+        props.add_child(glow)
+
+func _start_director() -> void:
+    var director := Node.new()
+    director.name = "GameDirector"
+    director.set_script(DIRECTOR_SCRIPT)
+    add_child(director)

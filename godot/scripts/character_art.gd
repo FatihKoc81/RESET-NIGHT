@@ -86,7 +86,7 @@ func build() -> void:
         # Human raider: layered street clothes, face covering and improvised weapon.
         box("RaiderHoodie", Vector3(0.60, 0.48, 0.27), mat("#3b2928"), Vector3(0, 1.25, -0.02))
         box("RaiderVest", Vector3(0.54, 0.34, 0.08), mat("#17191d"), Vector3(0, 1.28, -0.19))
-        box("FaceCover", Vector3(0.30, 0.12, 0.045), mat("#6e2026"), Vector3(0, 1.62, -0.225))
+        build_raider_mask(dark)
         box("ShoulderPadL", Vector3(0.22, 0.16, 0.22), dark, Vector3(-0.37, 1.48, 0))
         box("ShoulderPadR", Vector3(0.22, 0.16, 0.22), dark, Vector3(0.37, 1.48, 0))
         box("UtilityPouch", Vector3(0.15, 0.18, 0.10), mat("#5a4938"), Vector3(0.20, 1.02, -0.19))
@@ -136,17 +136,59 @@ func add_mesh(label: String, mesh: Mesh, material: Material, pos: Vector3, paren
     (self if parent == null else parent).add_child(node)
     return node
 
-func mat(color: String, rough: float = 0.92) -> ShaderMaterial:
-    var material := ShaderMaterial.new()
-    material.shader = comic_shader
-    material.set_shader_parameter("base_color", Color(color))
-    material.set_shader_parameter("hatch_strength", 0.22)
-    var ink := ShaderMaterial.new()
-    ink.shader = outline
-    ink.set_shader_parameter("outline_color", Color("#08090b"))
-    ink.set_shader_parameter("outline_width", 0.018)
-    material.next_pass = ink
+func mat(color: String, rough: float = 0.92) -> StandardMaterial3D:
+    var material := StandardMaterial3D.new()
+    material.albedo_color = Color(color)
+    material.roughness = rough
+    material.metallic = 0.0
     return material
+
+func glow(color: String, energy: float = 2.4) -> StandardMaterial3D:
+    var material := StandardMaterial3D.new()
+    material.albedo_color = Color(color)
+    material.emission_enabled = true
+    material.emission = Color(color)
+    material.emission_energy_multiplier = energy
+    return material
+
+func head_part(label: String, mesh: Mesh, material: Material, pos: Vector3) -> MeshInstance3D:
+    return add_mesh(label, mesh, material, pos, head)
+
+func head_box(label: String, dimensions: Vector3, material: Material, pos: Vector3) -> MeshInstance3D:
+    var mesh := BoxMesh.new()
+    mesh.size = dimensions
+    return head_part(label, mesh, material, pos)
+
+func build_raider_mask(dark: Material) -> void:
+    # 5 farklı arınma maskesi: gülen yüz, kuru kafa, domuz, palyaço, kara kukuletalı.
+    var style := randi() % 5
+    var colors := ["#d8d4c8", "#c9c2ae", "#b98c86", "#d9dccf", "#17191c"]
+    var mask := mat(colors[style], 0.55)
+    sphere(head, "Mask", Vector3(0.245, 0.285, 0.13), mask, Vector3(0, 0, -0.11))
+    var eye_mat: Material = glow("#ff3b2f", 2.6) if style == 4 else dark
+    head_box("MaskEyeL", Vector3(0.07, 0.045, 0.02), eye_mat, Vector3(-0.085, 0.045, -0.235))
+    head_box("MaskEyeR", Vector3(0.07, 0.045, 0.02), eye_mat, Vector3(0.085, 0.045, -0.235))
+    if style == 0:
+        head_box("SmileMid", Vector3(0.15, 0.02, 0.02), dark, Vector3(0, -0.09, -0.238))
+        head_box("SmileL", Vector3(0.025, 0.04, 0.02), dark, Vector3(-0.085, -0.07, -0.238))
+        head_box("SmileR", Vector3(0.025, 0.04, 0.02), dark, Vector3(0.085, -0.07, -0.238))
+    elif style == 1:
+        for i in range(4):
+            head_box("Tooth%d" % i, Vector3(0.03, 0.05, 0.02), dark, Vector3(-0.075 + i * 0.05, -0.095, -0.238))
+    elif style == 2:
+        var snout := CylinderMesh.new()
+        snout.top_radius = 0.07
+        snout.bottom_radius = 0.075
+        snout.height = 0.07
+        var snout_node := head_part("Snout", snout, mat("#d49a9a", 0.6), Vector3(0, -0.035, -0.265))
+        snout_node.rotation_degrees.x = 90.0
+        head_box("Nostrils", Vector3(0.07, 0.025, 0.02), dark, Vector3(0, -0.035, -0.305))
+    elif style == 3:
+        head_box("ClownHair", Vector3(0.36, 0.11, 0.34), mat("#2f6b34", 0.9), Vector3(0, 0.22, 0.0))
+        head_box("ClownMouth", Vector3(0.16, 0.035, 0.02), mat("#a01820", 0.6), Vector3(0, -0.09, -0.238))
+        head_box("ClownNose", Vector3(0.05, 0.05, 0.03), mat("#a01820", 0.6), Vector3(0, -0.02, -0.245))
+    else:
+        head_box("HoodTop", Vector3(0.40, 0.12, 0.38), dark, Vector3(0, 0.17, 0.0))
 
 func trigger_bite() -> void:
     attack_pose_time = 0.55
