@@ -1,0 +1,42 @@
+name: Claude Dispatch
+
+# Başka bir iş akışı (Gemini/GPT) veya sen elle "Run workflow" ile Claude'a görev verebilirsin.
+# Sadece repoya yazma yetkisi olanlar tetikleyebilir.
+
+on:
+  workflow_dispatch:
+    inputs:
+      prompt:
+        description: "Claude'a verilecek görev"
+        required: true
+        type: string
+
+concurrency:
+  group: claude-dispatch
+  cancel-in-progress: false
+
+jobs:
+  claude:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
+      id-token: write
+      actions: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Run Claude Code
+        uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          prompt: ${{ inputs.prompt }}
+          claude_args: |
+            --model claude-sonnet-5-5
+            --max-turns 25
