@@ -4,12 +4,6 @@ name: Claude Dispatch
 # İsteğe bağlı manuel workflow_dispatch de korunur.
 
 on:
-  push:
-    branches: [main]
-    paths:
-      - "CLAUDE_TASK.md"
-      - "CLAUDE.md"
-      - "GEMINI.md"
   workflow_dispatch:
     inputs:
       prompt:
