@@ -9,7 +9,7 @@ on:
         description: "Gemini'ye verilecek geliştirme görevi"
         required: true
         type: string
-        default: "GitHub Issue #34 görevini uygula. Godot 4 gerçek 3D yapısını, insan saldırganlı SAVUNMA/TAARRUZ sistemini, SOLO/EKİP/HİKÂYE_GÖREV modlarını, mobil kontrolleri, kayıt/yüklemeyi ve Android performansını denetle. En kritik doğrulanabilir eksiklikleri düzelt, test et ve PR hazırla."
+        default: "Issue #34 için gerçek kod geliştir: Önce godot/scripts/network_manager.gd ve ilgili sahneleri incele. SAVUNMA/TAARRUZ ile SOLO/EKİP/HİKÂYE_GÖREV seçimini yöneten merkezi FactionModeManager yoksa Godot 4 uyumlu olarak oluştur ve menü, oyun yöneticisi, düşman spawn sistemi ile entegre et. Var olan akışı bozma. Test et ve PR hazırla."
 permissions:
   contents: write
   pull-requests: write
