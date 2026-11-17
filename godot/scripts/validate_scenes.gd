@@ -6,7 +6,10 @@ const SCENES := [
     "res://scenes/player/Player3D.tscn",
     "res://scenes/ui/MobileControls.tscn",
     "res://scenes/enemies/HumanRaider.tscn",
-    "res://scenes/enemies/Enemy.tscn"
+    "res://scenes/enemies/Enemy.tscn",
+    "res://scenes/interactables/LootContainer3D.tscn",
+    "res://scenes/ui/HUD3D.tscn",
+    "res://scenes/weapons/Gun3D.tscn"
 ]
 
 func _initialize() -> void:
