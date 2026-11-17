@@ -1,14 +1,20 @@
 name: Claude Dispatch
 
-# Başka bir iş akışı (Gemini/GPT) veya sen elle "Run workflow" ile Claude'a görev verebilirsin.
-# Sadece repoya yazma yetkisi olanlar tetikleyebilir.
+# Claude görevleri CLAUDE_TASK.md dosyasına yazıldığında main push'u ile otomatik başlar.
+# İsteğe bağlı manuel workflow_dispatch de korunur.
 
 on:
+  push:
+    branches: [main]
+    paths:
+      - "CLAUDE_TASK.md"
+      - "CLAUDE.md"
+      - "GEMINI.md"
   workflow_dispatch:
     inputs:
       prompt:
-        description: "Claude'a verilecek görev"
-        required: true
+        description: "Claude'a verilecek görev (boş bırakılırsa CLAUDE_TASK.md kullanılır)"
+        required: false
         type: string
 
 concurrency:
@@ -18,7 +24,7 @@ concurrency:
 jobs:
   claude:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 35
     permissions:
       contents: write
       pull-requests: write
@@ -29,14 +35,39 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          fetch-depth: 1
+          ref: main
+          fetch-depth: 0
+
+      - name: Prepare task prompt
+        id: task
+        env:
+          MANUAL_PROMPT: ${{ inputs.prompt }}
+        shell: bash
+        run: |
+          if [ -n "$MANUAL_PROMPT" ]; then
+            {
+              echo "value<<CLAUDE_TASK_EOF"
+              printf '%s\n' "$MANUAL_PROMPT"
+              echo "CLAUDE_TASK_EOF"
+            } >> "$GITHUB_OUTPUT"
+          elif [ -s CLAUDE_TASK.md ]; then
+            {
+              echo "value<<CLAUDE_TASK_EOF"
+              cat CLAUDE_TASK.md
+              echo
+              echo "CLAUDE_TASK_EOF"
+            } >> "$GITHUB_OUTPUT"
+          else
+            echo "::error::Manual prompt or non-empty CLAUDE_TASK.md is required."
+            exit 1
+          fi
 
       - name: Run Claude Code
         uses: anthropics/claude-code-action@v1
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          prompt: ${{ inputs.prompt }}
+          prompt: ${{ steps.task.outputs.value }}
           claude_args: |
             --model claude-sonnet-5-5
-            --max-turns 25
+            --max-turns 45
