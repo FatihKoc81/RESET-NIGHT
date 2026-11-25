@@ -9,7 +9,9 @@ const UPDATE_FILE := "user://reset-night-update.apk"
 
 var _body: VBoxContainer
 var _notice: Label
-var _content: VBoxContainer
+var _content: HBoxContainer
+var _brand_panel: VBoxContainer
+var _page_panel: VBoxContainer
 var _hero_art: TextureRect
 var _hero_fallback: Label
 var _continue_button: Button
@@ -24,8 +26,8 @@ var _update_asset_url := ""
 var _settings := ConfigFile.new()
 
 func _ready() -> void:
-    # Portrait is reserved for the opening/menu experience.
-    DisplayServer.screen_set_orientation(DisplayServer.SCREEN_PORTRAIT)
+    # The whole app opens and stays in landscape, including the main menu.
+    DisplayServer.screen_set_orientation(DisplayServer.SCREEN_LANDSCAPE)
     DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_FULLSCREEN)
     theme = BUILDER.new().setup_theme()
     _settings.load("user://settings.cfg")
@@ -48,32 +50,42 @@ func _ready() -> void:
 func _build_shell() -> void:
     var background := ColorRect.new()
     background.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-    background.color = Color("#080a0e")
+    background.color = Color("#08090d")
     add_child(background)
 
     var haze := ColorRect.new()
     haze.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
     haze.mouse_filter = Control.MOUSE_FILTER_IGNORE
-    haze.color = Color(0.12, 0.025, 0.035, 0.20)
+    haze.color = Color(0.12, 0.025, 0.035, 0.18)
     background.add_child(haze)
 
     var scroll := ScrollContainer.new()
     scroll.name = "MenuScroll"
     scroll.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-    scroll.offset_left = 14
+    scroll.offset_left = 22
     scroll.offset_top = 18
-    scroll.offset_right = -14
+    scroll.offset_right = -22
     scroll.offset_bottom = -18
     scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
     add_child(scroll)
 
-    _content = VBoxContainer.new()
-    _content.name = "MenuContent"
+    _content = HBoxContainer.new()
+    _content.name = "MenuContentLandscape"
     _content.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-    _content.add_theme_constant_override("separation", 12)
+    _content.size_flags_vertical = Control.SIZE_EXPAND_FILL
+    _content.add_theme_constant_override("separation", 28)
     scroll.add_child(_content)
 
-    # Original title artwork supplied for RESET NIGHT; decode the bundled WebP at runtime.
+    # Left identity panel: the game's original title artwork remains the focal point.
+    _brand_panel = VBoxContainer.new()
+    _brand_panel.name = "BrandPanel"
+    _brand_panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+    _brand_panel.size_flags_stretch_ratio = 0.88
+    _brand_panel.size_flags_vertical = Control.SIZE_EXPAND_FILL
+    _brand_panel.alignment = BoxContainer.ALIGNMENT_CENTER
+    _brand_panel.add_theme_constant_override("separation", 16)
+    _content.add_child(_brand_panel)
+
     _hero_art = TextureRect.new()
     _hero_art.name = "ResetNightTitleArtwork"
     _hero_art.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
@@ -88,52 +100,75 @@ func _build_shell() -> void:
             _hero_art.texture = ImageTexture.create_from_image(artwork)
             artwork_loaded = true
     _hero_art.visible = artwork_loaded
-    _hero_fallback = _label("RESET NIGHT", 38, "#d9c4b2")
+
+    _hero_fallback = _label("RESET NIGHT", 42, "#d9c4b2")
     _hero_fallback.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
     _hero_fallback.add_theme_color_override("font_shadow_color", Color("#8b2028"))
     _hero_fallback.add_theme_constant_override("shadow_offset_x", 2)
     _hero_fallback.add_theme_constant_override("shadow_offset_y", 3)
     _hero_fallback.visible = not artwork_loaded
+
     var hero_center := CenterContainer.new()
     hero_center.name = "CenteredLogo"
     hero_center.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-    hero_center.custom_minimum_size.y = 224.0
+    hero_center.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+    hero_center.custom_minimum_size = Vector2(300, 230)
     hero_center.add_child(_hero_art)
     hero_center.add_child(_hero_fallback)
-    _content.add_child(hero_center)
+    _brand_panel.add_child(hero_center)
 
-    var subtitle := _label("ÇEVRİMİÇİ / ÇEVRİMDIŞI DESTEKLİ", 13, "#d4c4bd")
+    var subtitle := _label("HAYATTA KAL.  •  GECEYİ ATLAT.", 15, "#d4c4bd")
     subtitle.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-    _content.add_child(subtitle)
+    _brand_panel.add_child(subtitle)
+    var platform_note := _label("ÇEVRİMİÇİ / ÇEVRİMDIŞI DESTEKLİ", 11, "#8e8582")
+    platform_note.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+    _brand_panel.add_child(platform_note)
 
-    var line := HSeparator.new()
-    _content.add_child(line)
+    var divider := VSeparator.new()
+    divider.custom_minimum_size.x = 1
+    _content.add_child(divider)
+
+    # Right navigation panel uses the available landscape width for large controls.
+    _page_panel = VBoxContainer.new()
+    _page_panel.name = "PagePanel"
+    _page_panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+    _page_panel.size_flags_stretch_ratio = 1.22
+    _page_panel.size_flags_vertical = Control.SIZE_EXPAND_FILL
+    _page_panel.alignment = BoxContainer.ALIGNMENT_CENTER
+    _page_panel.add_theme_constant_override("separation", 12)
+    _content.add_child(_page_panel)
+
     _body = VBoxContainer.new()
     _body.name = "MenuPage"
-    _body.add_theme_constant_override("separation", 14)
+    _body.add_theme_constant_override("separation", 12)
     _body.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-    _content.add_child(_body)
+    _body.size_flags_vertical = Control.SIZE_EXPAND_FILL
+    _page_panel.add_child(_body)
 
     _notice = _label("", 12, "#e1b8ad")
     _notice.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
     _notice.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-    _content.add_child(_notice)
+    _page_panel.add_child(_notice)
 
-    var footer := _label("RESET NIGHT  •  SURVIVAL EXPERIENCE", 10, "#77716e")
+    var footer := _label("RESET NIGHT  •  SURVIVAL EXPERIENCE", 9, "#6e6868")
     footer.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-    _content.add_child(footer)
+    _page_panel.add_child(footer)
 
 func _layout_menu() -> void:
+    var view := get_viewport_rect().size
+    if view.x <= 0.0 or view.y <= 0.0:
+        return
     if is_instance_valid(_content):
-        _content.custom_minimum_size.x = maxf(280.0, size.x - 28.0)
+        _content.custom_minimum_size = Vector2(maxf(760.0, view.x - 44.0), maxf(560.0, view.y - 36.0))
+    if is_instance_valid(_brand_panel):
+        _brand_panel.custom_minimum_size.x = clampf(view.x * 0.34, 260.0, 510.0)
     if is_instance_valid(_hero_art):
-        # Keep the title artwork compact and visible on portrait phones.
-        var hero_height := clampf(size.y * 0.19, 156.0, 224.0)
-        _hero_art.custom_minimum_size = Vector2(maxf(250.0, size.x - 52.0), hero_height)
+        var brand_width := clampf(view.x * 0.34, 260.0, 510.0)
+        var hero_height := clampf(view.y * 0.43, 190.0, 330.0)
+        _hero_art.custom_minimum_size = Vector2(brand_width - 28.0, hero_height)
         _hero_art.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-        _hero_art.size_flags_vertical = Control.SIZE_SHRINK_CENTER
         if is_instance_valid(_hero_fallback):
-            _hero_fallback.custom_minimum_size = Vector2(maxf(250.0, size.x - 52.0), 112.0)
+            _hero_fallback.custom_minimum_size = Vector2(brand_width - 28.0, 120.0)
 
 func _label(value: String, font_size: int, color: String) -> Label:
     var label := Label.new()
