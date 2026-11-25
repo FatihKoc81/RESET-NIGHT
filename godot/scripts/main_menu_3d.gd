@@ -1,6 +1,6 @@
 extends Control
 
-const GAME_SCENE := "res://scenes/maps/Map3D.tscn"
+const GAME_SCENE := "res://scenes/Main3D.tscn"
 const BUILDER = preload("res://scripts/ui_asset_builder.gd")
 const PORT := 2456
 const UPDATE_RELEASE_API := "https://api.github.com/repos/FatihKoc81/RESET-NIGHT/releases/tags/godot-android-latest"
@@ -62,28 +62,28 @@ func _build_shell() -> void:
     var scroll := ScrollContainer.new()
     scroll.name = "MenuScroll"
     scroll.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-    scroll.offset_left = 22
-    scroll.offset_top = 18
-    scroll.offset_right = -22
-    scroll.offset_bottom = -18
+    scroll.offset_left = 26
+    scroll.offset_top = 16
+    scroll.offset_right = -26
+    scroll.offset_bottom = -16
     scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
     add_child(scroll)
 
-    _content = HBoxContainer.new()
+    _content = VBoxContainer.new()
     _content.name = "MenuContentLandscape"
     _content.size_flags_horizontal = Control.SIZE_EXPAND_FILL
     _content.size_flags_vertical = Control.SIZE_EXPAND_FILL
-    _content.add_theme_constant_override("separation", 28)
+    _content.add_theme_constant_override("separation", 10)
     scroll.add_child(_content)
 
-    # Left identity panel: the game's original title artwork remains the focal point.
+    # Large, centered title artwork at the top of the landscape home screen.
     _brand_panel = VBoxContainer.new()
-    _brand_panel.name = "BrandPanel"
+    _brand_panel.name = "CenteredBrandPanel"
     _brand_panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-    _brand_panel.size_flags_stretch_ratio = 0.88
     _brand_panel.size_flags_vertical = Control.SIZE_EXPAND_FILL
+    _brand_panel.size_flags_stretch_ratio = 1.08
     _brand_panel.alignment = BoxContainer.ALIGNMENT_CENTER
-    _brand_panel.add_theme_constant_override("separation", 16)
+    _brand_panel.add_theme_constant_override("separation", 5)
     _content.add_child(_brand_panel)
 
     _hero_art = TextureRect.new()
@@ -101,7 +101,7 @@ func _build_shell() -> void:
             artwork_loaded = true
     _hero_art.visible = artwork_loaded
 
-    _hero_fallback = _label("RESET NIGHT", 42, "#d9c4b2")
+    _hero_fallback = _label("RESET NIGHT", 54, "#d9c4b2")
     _hero_fallback.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
     _hero_fallback.add_theme_color_override("font_shadow_color", Color("#8b2028"))
     _hero_fallback.add_theme_constant_override("shadow_offset_x", 2)
@@ -111,39 +111,35 @@ func _build_shell() -> void:
     var hero_center := CenterContainer.new()
     hero_center.name = "CenteredLogo"
     hero_center.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-    hero_center.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-    hero_center.custom_minimum_size = Vector2(300, 230)
+    hero_center.size_flags_vertical = Control.SIZE_EXPAND_FILL
     hero_center.add_child(_hero_art)
     hero_center.add_child(_hero_fallback)
     _brand_panel.add_child(hero_center)
 
-    var subtitle := _label("HAYATTA KAL.  •  GECEYİ ATLAT.", 15, "#d4c4bd")
+    var subtitle := _label("GECE ÇÖKTÜ. HAYATTA KAL.", 16, "#d4c4bd")
     subtitle.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
     _brand_panel.add_child(subtitle)
-    var platform_note := _label("ÇEVRİMİÇİ / ÇEVRİMDIŞI DESTEKLİ", 11, "#8e8582")
-    platform_note.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-    _brand_panel.add_child(platform_note)
 
-    var divider := VSeparator.new()
-    divider.custom_minimum_size.x = 1
+    var divider := HSeparator.new()
+    divider.add_theme_color_override("font_color", Color("#3b2529"))
     _content.add_child(divider)
 
-    # Right navigation panel uses the available landscape width for large controls.
+    # Symmetrical two-column navigation beneath the centered logo.
     _page_panel = VBoxContainer.new()
-    _page_panel.name = "PagePanel"
+    _page_panel.name = "SymmetricNavigationPanel"
     _page_panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-    _page_panel.size_flags_stretch_ratio = 1.22
     _page_panel.size_flags_vertical = Control.SIZE_EXPAND_FILL
+    _page_panel.size_flags_stretch_ratio = 0.92
     _page_panel.alignment = BoxContainer.ALIGNMENT_CENTER
-    _page_panel.add_theme_constant_override("separation", 12)
+    _page_panel.add_theme_constant_override("separation", 7)
     _content.add_child(_page_panel)
 
     _body = VBoxContainer.new()
     _body.name = "MenuPage"
-    _body.add_theme_constant_override("separation", 12)
     _body.size_flags_horizontal = Control.SIZE_EXPAND_FILL
     _body.size_flags_vertical = Control.SIZE_EXPAND_FILL
     _body.alignment = BoxContainer.ALIGNMENT_CENTER
+    _body.add_theme_constant_override("separation", 8)
     _page_panel.add_child(_body)
 
     _notice = _label("", 12, "#e1b8ad")
@@ -153,23 +149,20 @@ func _build_shell() -> void:
 
     var footer := _label("RESET NIGHT  •  SURVIVAL EXPERIENCE", 9, "#6e6868")
     footer.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-    _page_panel.add_child(footer)
+    _content.add_child(footer)
 
 func _layout_menu() -> void:
     var view := get_viewport_rect().size
     if view.x <= 0.0 or view.y <= 0.0:
         return
     if is_instance_valid(_content):
-        _content.custom_minimum_size = Vector2(maxf(760.0, view.x - 44.0), maxf(560.0, view.y - 36.0))
-    if is_instance_valid(_brand_panel):
-        _brand_panel.custom_minimum_size.x = clampf(view.x * 0.34, 260.0, 510.0)
+        _content.custom_minimum_size = Vector2(maxf(760.0, view.x - 52.0), maxf(420.0, view.y - 32.0))
     if is_instance_valid(_hero_art):
-        var brand_width := clampf(view.x * 0.34, 260.0, 510.0)
-        var hero_height := clampf(view.y * 0.43, 190.0, 330.0)
-        _hero_art.custom_minimum_size = Vector2(brand_width - 28.0, hero_height)
+        var logo_height := clampf(view.y * 0.43, 210.0, 390.0)
+        _hero_art.custom_minimum_size = Vector2(clampf(view.x * 0.58, 520.0, 1050.0), logo_height)
         _hero_art.size_flags_horizontal = Control.SIZE_EXPAND_FILL
         if is_instance_valid(_hero_fallback):
-            _hero_fallback.custom_minimum_size = Vector2(brand_width - 28.0, 120.0)
+            _hero_fallback.custom_minimum_size = Vector2(clampf(view.x * 0.58, 520.0, 1050.0), 130.0)
 
 func _label(value: String, font_size: int, color: String) -> Label:
     var label := Label.new()
@@ -203,25 +196,26 @@ func _add_page_title(value: String) -> void:
 
 func _show_home() -> void:
     _clear_page()
-    _add_page_title("GECE ÇÖKTÜ. HAYATTA KAL.")
 
-    var play_button := _add_button("OYNA  /  TARAFINI SEÇ", _show_sides, 82)
-    play_button.add_theme_font_size_override("font_size", 21)
+    var play_button := _add_button("OYNA  /  TARAFINI SEÇ", _show_sides, 66)
+    play_button.add_theme_font_size_override("font_size", 22)
 
     var grid := GridContainer.new()
-    grid.name = "HomeMenuGrid"
+    grid.name = "SymmetricHomeButtonGrid"
     grid.columns = 2
     grid.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-    grid.add_theme_constant_override("h_separation", 12)
-    grid.add_theme_constant_override("v_separation", 10)
+    grid.add_theme_constant_override("h_separation", 14)
+    grid.add_theme_constant_override("v_separation", 9)
     _body.add_child(grid)
 
-    _add_button_to(grid, "KARAKTER SEÇİMİ  /  EŞYALAR", _show_characters, 62)
-    _add_button_to(grid, "AYARLAR", _show_settings, 62)
-    _add_button_to(grid, "LİDERLİK TABLOSU", _show_leaderboard, 62)
-    _continue_button = _add_button_to(grid, "KAYITLI OYUNA DEVAM ET", _continue_game, 62)
+    _add_button_to(grid, "KARAKTER SEÇİMİ  /  EŞYALAR", _show_characters, 54)
+    _add_button_to(grid, "AYARLAR", _show_settings, 54)
+    _add_button_to(grid, "LİDERLİK TABLOSU", _show_leaderboard, 54)
+    _continue_button = _add_button_to(grid, "KAYITLI OYUNA DEVAM ET", _continue_game, 54)
     _continue_button.disabled = not FileAccess.file_exists("user://save_game.dat")
-    _add_button_to(grid, "ÇIKIŞ", _exit_game, 62)
+
+    var exit_button := _add_button("ÇIKIŞ", _exit_game, 54)
+    exit_button.add_theme_font_size_override("font_size", 17)
 
 func _check_for_updates() -> void:
     if not is_instance_valid(_update_request) or _update_request.get_http_client_status() != HTTPClient.STATUS_DISCONNECTED:
