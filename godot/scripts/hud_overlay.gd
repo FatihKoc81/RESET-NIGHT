@@ -43,11 +43,13 @@ func _draw() -> void:
     draw_string(font, radar.position + Vector2(9, 17), "RADAR", HORIZONTAL_ALIGNMENT_LEFT, -1, 10, Color("#d9b8b8"))
     var ammo := int(_player.get("shotgun_ammo"))
     var reserve := int(_player.get("shotgun_reserve"))
-    var weapon := Rect2(size.x - 236, size.y - 74, 214, 52)
-    draw_rect(weapon, Color(0.035, 0.045, 0.055, 0.94), true)
-    draw_rect(weapon, Color("#8b3030"), false, 2.0)
-    draw_string(font, weapon.position + Vector2(12, 19), "POMPALI", HORIZONTAL_ALIGNMENT_LEFT, -1, 11, Color("#bdb4ad"))
-    draw_string(font, weapon.position + Vector2(12, 42), "%02d / %02d" % [ammo, reserve], HORIZONTAL_ALIGNMENT_LEFT, -1, 19, Color("#f4e9d2"))
+    # Keep weapon information centered along the bottom so it never sits beneath
+    # the right-hand action buttons on phones with different aspect ratios.
+    var weapon := Rect2((size.x - 190.0) * 0.5, size.y - 62.0, 190.0, 46.0)
+    draw_rect(weapon, Color(0.035, 0.045, 0.055, 0.88), true)
+    draw_rect(weapon, Color("#8b3030"), false, 1.5)
+    draw_string(font, weapon.position + Vector2(10, 17), "POMPALI", HORIZONTAL_ALIGNMENT_LEFT, -1, 10, Color("#bdb4ad"))
+    draw_string(font, weapon.position + Vector2(10, 38), "%02d / %02d" % [ammo, reserve], HORIZONTAL_ALIGNMENT_LEFT, -1, 17, Color("#f4e9d2"))
 
 func _draw_bar(pos: Vector2, bar_size: Vector2, ratio: float, fill: Color, caption: String) -> void:
     draw_string(ThemeDB.fallback_font, pos + Vector2(0, -5), caption, HORIZONTAL_ALIGNMENT_LEFT, -1, 10, Color("#d4c9c2"))
