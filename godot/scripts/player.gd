@@ -33,6 +33,12 @@ var dead := false
 
 func _ready() -> void:
     add_to_group("player")
+    # Ignore the player's own capsule so the third-person camera does not collapse into the body.
+    var camera_arm := get_node_or_null("CameraPivot/SpringArm3D") as SpringArm3D
+    if is_instance_valid(camera_arm):
+        camera_arm.add_excluded_object(get_rid())
+        camera_arm.spring_length = 4.2
+        camera_arm.margin = 0.18
     _apply_saved_character()
     var session_manager := get_node_or_null("/root/NetworkManager")
     if is_instance_valid(session_manager):
