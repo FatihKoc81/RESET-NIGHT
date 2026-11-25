@@ -81,10 +81,13 @@ func _physics_process(delta: float) -> void:
         var aware := (distance <= detection_range and _has_line_of_sight()) or distance <= hearing_range
         if aware and distance > 0.01:
             var direction := offset / distance
-            rotation.y = atan2(-direction.x, -direction.z)
             if distance > 1.45:
+                direction = _steer_around_obstacles(direction)
+                rotation.y = atan2(-direction.x, -direction.z)
                 velocity.x = direction.x * walk_speed
                 velocity.z = direction.z * walk_speed
+            else:
+                rotation.y = atan2(-direction.x, -direction.z)
             else:
                 velocity.x = 0.0
                 velocity.z = 0.0
@@ -112,6 +115,32 @@ func _physics_process(delta: float) -> void:
     else:
         velocity.y = 0.0
     move_and_slide()
+
+func _steer_around_obstacles(direction: Vector3) -> Vector3:
+    # Keep melee opponents from walking directly into walls, wrecks and barricades.
+    var origin := global_position + Vector3.UP * 0.9
+    var forward_query := PhysicsRayQueryParameters3D.create(origin, origin + direction * 1.45)
+    forward_query.exclude = [get_rid()]
+    if get_world_3d().direct_space_state.intersect_ray(forward_query).is_empty():
+        return direction
+
+    var left := Vector3(-direction.z, 0.0, direction.x).normalized()
+    var right := -left
+    var state := get_world_3d().direct_space_state
+    var left_query := PhysicsRayQueryParameters3D.create(origin, origin + left * 1.8)
+    var right_query := PhysicsRayQueryParameters3D.create(origin, origin + right * 1.8)
+    left_query.exclude = [get_rid()]
+    right_query.exclude = [get_rid()]
+    var left_clear := state.intersect_ray(left_query).is_empty()
+    var right_clear := state.intersect_ray(right_query).is_empty()
+    if left_clear and not right_clear:
+        return (direction * 0.35 + left * 0.94).normalized()
+    if right_clear and not left_clear:
+        return (direction * 0.35 + right * 0.94).normalized()
+    if left_clear and right_clear:
+        return (direction * 0.35 + (left if randf() < 0.5 else right) * 0.94).normalized()
+    # Both sides are tight: slide along the nearer edge rather than pushing into the obstacle.
+    return left if randf() < 0.5 else right
 
 func _has_line_of_sight() -> bool:
     var from := global_position + Vector3.UP * 1.25
