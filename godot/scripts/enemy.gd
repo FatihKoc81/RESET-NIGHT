@@ -81,13 +81,12 @@ func _physics_process(delta: float) -> void:
         var aware := (distance <= detection_range and _has_line_of_sight()) or distance <= hearing_range
         if aware and distance > 0.01:
             var direction := offset / distance
+            rotation.y = atan2(-direction.x, -direction.z)
             if distance > 1.45:
                 direction = _steer_around_obstacles(direction)
                 rotation.y = atan2(-direction.x, -direction.z)
                 velocity.x = direction.x * walk_speed
                 velocity.z = direction.z * walk_speed
-            else:
-                rotation.y = atan2(-direction.x, -direction.z)
             else:
                 velocity.x = 0.0
                 velocity.z = 0.0
