@@ -25,14 +25,17 @@ func _ready() -> void:
     var ui_builder = preload("res://scripts/ui_asset_builder.gd").new()
     root.theme = ui_builder.setup_theme()
     add_child(root)
-    broadcast_label = _label(root, "NORMAL HAYAT", Vector2(22, 60), Vector2(460, 42), 17)
+    # Health, stamina and ammunition are drawn by StatusOverlay; avoid duplicate labels.
+    health_label = _label(root, "SAĞLIK 100", Vector2.ZERO, Vector2.ZERO, 22)
+    health_label.visible = false
+    ammo_label = _label(root, "POMPALI 2 / 20  •  MOLOTOF 3", Vector2.ZERO, Vector2.ZERO, 15)
+    ammo_label.visible = false
+    broadcast_label = _label(root, "NORMAL HAYAT", Vector2(22, 22), Vector2(520, 28), 16)
     broadcast_label.add_theme_color_override("font_color", Color("#f2c078"))
     var world_clock := get_node_or_null("/root/WorldBroadcast")
     if is_instance_valid(world_clock):
         broadcast_label.text = world_clock.current_status()
         world_clock.broadcast_changed.connect(_on_broadcast_changed)
-    health_label = _label(root, "SAĞLIK 100", Vector2(22, 18), Vector2(220, 54), 22)
-    ammo_label = _label(root, "POMPALI 2 / 20  •  MOLOTOF 3", Vector2(22, 96), Vector2(360, 34), 15)
     message_label = _label(root, "RESET NIGHT", Vector2(0, 18), Vector2(600, 48), 20)
     message_label.anchor_left = 0.5
     message_label.anchor_right = 0.5
@@ -61,15 +64,9 @@ func _layout_hud(root: Control) -> void:
     var action_gap := clampf(view.x * 0.009, 6.0, 12.0)
     var action_start_x := view.x - margin - 3.0 * action_w - 2.0 * action_gap
     var action_start_y := view.y - margin - 3.0 * action_h - 2.0 * action_gap
-    if is_instance_valid(health_label):
-        health_label.position = Vector2(margin, margin)
-        health_label.size = Vector2(minf(230.0, view.x * 0.25), 36)
     if is_instance_valid(broadcast_label):
-        broadcast_label.position = Vector2(margin, margin + 40)
-        broadcast_label.size = Vector2(minf(520.0, view.x * 0.43), 38)
-    if is_instance_valid(ammo_label):
-        ammo_label.position = Vector2(margin, margin + 78)
-        ammo_label.size = Vector2(minf(420.0, view.x * 0.40), 30)
+        broadcast_label.position = Vector2(margin, margin + 18)
+        broadcast_label.size = Vector2(minf(520.0, view.x * 0.43), 30)
     if is_instance_valid(message_label):
         message_label.position = Vector2(view.x * 0.5 - minf(300.0, view.x * 0.22), margin)
         message_label.size.x = minf(600.0, view.x * 0.44)
