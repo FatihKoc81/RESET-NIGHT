@@ -1,5 +1,5 @@
 extends CharacterBody3D
-## Maskeli arınma saldırganı. Tür (kind) spawner tarafından add_child'dan ÖNCE atanır.
+## İnsan savaşçı AI. Tür ve karşı fraksiyon spawner tarafından add_child'dan ÖNCE atanır.
 
 const KIND_STATS := {
     "walker": {"health": 60.0, "speed": 2.1, "damage": 8.0, "points": 100, "scale": 1.0},
@@ -12,6 +12,7 @@ const KIND_STATS := {
 @export var base_detection_range := 7.0
 @export var hearing_range := 10.0
 var kind := "walker"
+var faction := "attack"
 var attack_damage := 8.0
 var points := 100
 var target: Node3D
@@ -26,6 +27,7 @@ var dead := false
 func _ready() -> void:
     add_to_group("enemies")
     add_to_group("human_raiders")
+    add_to_group("faction_" + faction)
     target = get_tree().get_first_node_in_group("player")
     var stats: Dictionary = KIND_STATS.get(kind, KIND_STATS["walker"])
     var intensity := 0.0
