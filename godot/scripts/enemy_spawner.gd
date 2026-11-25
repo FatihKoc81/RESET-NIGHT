@@ -14,7 +14,6 @@ func _ready() -> void:
     _spawn_rng.randomize()
 
 func _process(delta: float) -> void:
-    var session_manager := get_node_or_null("/root/NetworkManager")
     var intensity := 0.0
     var director := get_tree().get_first_node_in_group("director")
     if is_instance_valid(director):
