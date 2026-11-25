@@ -58,8 +58,13 @@ func _validate() -> void:
                 failures.append("Main3D: aktif üçüncü şahıs kamerası yok")
             if not is_instance_valid(spawner):
                 failures.append("Main3D: EnemySpawner eksik")
+            elif is_instance_valid(player):
+                spawner.spawn_one("walker")
+                await physics_frame
+                if get_nodes_in_group("enemies").is_empty():
+                    failures.append("Main3D: insan düşman üretilemedi")
             if failures.is_empty():
-                print("PLAYABLE BOOT OK: player, camera, HUD, director, enemy spawner")
+                print("PLAYABLE BOOT OK: player, camera, HUD, director, enemy spawner, human enemy")
             game.queue_free()
             await process_frame
 
