@@ -6,7 +6,13 @@
 Mobil hayatta kalma oyunu. Depo README'sinde ilk oynanabilir sürüm tek oyunculu, çevrimdışı gece savunması olarak tanımlanıyor.
 
 ## Oynanış akışı
-Oyuncu hareketi (sanal joystick/WASD) → düşman etkileşimi → yakın dövüş/ateş → sağlık ve şarjör yönetimi → cihazda rekor saklama.
+Oyuncu hareketi (sanal joystick/WASD) → karşı fraksiyondan insan AI düşmanlarının üretimi ve takibi → yakın dövüş/ateş → sağlık ve şarjör yönetimi → cihazda rekor saklama.
+
+## Fraksiyon temeli
+- SAVUNMA seçildiğinde karşı tarafta SALDIRI fraksiyonuna ait insan AI savaşçıları üretilir.
+- SALDIRI seçildiğinde karşı tarafta SAVUNMA fraksiyonuna ait insan AI savaşçıları üretilir.
+- Her iki akışta da aynı insan savaşçı AI davranış temeli kullanılır; zombi/undead türleri kullanılmaz.
+- Bu temel, iki tarafın karşılıklı AI çatışmasını sağlar; bölge ele geçirme hedefleri ve gerçek oyunculu takım senkronizasyonu ayrı geliştirme işleridir.
 
 ## Kök dosyalar
 - `README.md`: oyun özeti, kontroller ve APK dağıtım bilgisi.
