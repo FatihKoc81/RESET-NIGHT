@@ -15,8 +15,6 @@ func _ready() -> void:
 
 func _process(delta: float) -> void:
     var session_manager := get_node_or_null("/root/NetworkManager")
-    if is_instance_valid(session_manager) and str(session_manager.player_side) != "defense":
-        return
     var intensity := 0.0
     var director := get_tree().get_first_node_in_group("director")
     if is_instance_valid(director):
@@ -57,6 +55,9 @@ func spawn_one(kind: String) -> void:
         return
     var enemy := ENEMY_SCENE.instantiate()
     enemy.kind = kind
+    var session_manager := get_node_or_null("/root/NetworkManager")
+    var player_side := str(session_manager.player_side) if is_instance_valid(session_manager) else "defense"
+    enemy.faction = "attack" if player_side == "defense" else "defense"
     get_tree().current_scene.add_child(enemy)
     enemy.global_position = spawn_position
 
