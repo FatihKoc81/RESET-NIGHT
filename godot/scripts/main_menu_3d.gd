@@ -143,6 +143,7 @@ func _build_shell() -> void:
     _body.add_theme_constant_override("separation", 12)
     _body.size_flags_horizontal = Control.SIZE_EXPAND_FILL
     _body.size_flags_vertical = Control.SIZE_EXPAND_FILL
+    _body.alignment = BoxContainer.ALIGNMENT_CENTER
     _page_panel.add_child(_body)
 
     _notice = _label("", 12, "#e1b8ad")
@@ -184,12 +185,15 @@ func _clear_page() -> void:
     _notice.text = ""
 
 func _add_button(caption: String, action: Callable, min_height: int = 54) -> Button:
+    return _add_button_to(_body, caption, action, min_height)
+
+func _add_button_to(parent: Control, caption: String, action: Callable, min_height: int = 54) -> Button:
     var button := Button.new()
     button.text = caption
     button.custom_minimum_size = Vector2(0, min_height)
     button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
     button.pressed.connect(action)
-    _body.add_child(button)
+    parent.add_child(button)
     return button
 
 func _add_page_title(value: String) -> void:
@@ -199,17 +203,25 @@ func _add_page_title(value: String) -> void:
 
 func _show_home() -> void:
     _clear_page()
-    var top_space := Control.new()
-    top_space.custom_minimum_size.y = 24
-    _body.add_child(top_space)
     _add_page_title("GECE ÇÖKTÜ. HAYATTA KAL.")
-    _add_button("🎮  OYNA / TARAFINI SEÇ", _show_sides, 76)
-    _add_button("👤  KARAKTER SEÇİMİ / EŞYALAR", _show_characters, 76)
-    _add_button("⚙  AYARLAR", _show_settings, 76)
-    _add_button("🏆  LİDERLİK TABLOSU", _show_leaderboard, 76)
-    _continue_button = _add_button("▣  KAYITLI OYUNA DEVAM ET", _continue_game, 76)
+
+    var play_button := _add_button("OYNA  /  TARAFINI SEÇ", _show_sides, 82)
+    play_button.add_theme_font_size_override("font_size", 21)
+
+    var grid := GridContainer.new()
+    grid.name = "HomeMenuGrid"
+    grid.columns = 2
+    grid.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+    grid.add_theme_constant_override("h_separation", 12)
+    grid.add_theme_constant_override("v_separation", 10)
+    _body.add_child(grid)
+
+    _add_button_to(grid, "KARAKTER SEÇİMİ  /  EŞYALAR", _show_characters, 62)
+    _add_button_to(grid, "AYARLAR", _show_settings, 62)
+    _add_button_to(grid, "LİDERLİK TABLOSU", _show_leaderboard, 62)
+    _continue_button = _add_button_to(grid, "KAYITLI OYUNA DEVAM ET", _continue_game, 62)
     _continue_button.disabled = not FileAccess.file_exists("user://save_game.dat")
-    _add_button("✕  ÇIKIŞ", _exit_game, 68)
+    _add_button_to(grid, "ÇIKIŞ", _exit_game, 62)
 
 func _check_for_updates() -> void:
     if not is_instance_valid(_update_request) or _update_request.get_http_client_status() != HTTPClient.STATUS_DISCONNECTED:
