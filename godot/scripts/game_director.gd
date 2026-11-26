@@ -123,7 +123,7 @@ func _end(won: bool) -> void:
     var best := _save_record(final_score)
     _end_title.text = "ŞAFAK DOĞDU — HAYATTA KALDIN" if won else "ARINMA SENİ ALDI"
     _end_title.add_theme_color_override("font_color", Color("#7fd18b") if won else Color("#ff5b55"))
-    _end_text.text = "Dayanılan süre: %02d:%02d\nÖldürülen: %d\nSkor: %d\nREKOR: %d" % [floori(survived / 60.0), survived % 60, kills, final_score, best]
+    _end_text.text = "Dayanılan süre: %02d:%02d\nÖldürülen: %d\nMalzeme sandıkları: %d/%d\nGörev ödülü: %d\nSkor: %d\nREKOR: %d" % [floori(survived / 60.0), survived % 60, kills, caches_found, SUPPLY_CACHE_GOAL, cache_bonus, final_score, best]
     _end_root.visible = true
     var saver := get_node_or_null("/root/SaveManager")
     if is_instance_valid(saver):
