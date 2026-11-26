@@ -102,6 +102,15 @@ func _refresh_gamepad() -> void:
     if _active_gamepad >= 0:
         print("RESET NIGHT gamepad connected: ", _last_gamepad_name)
 
+func is_sprint_requested() -> bool:
+    if _active_gamepad < 0:
+        return false
+    var stick := Vector2(
+        Input.get_joy_axis(_active_gamepad, JOY_AXIS_LEFT_X),
+        Input.get_joy_axis(_active_gamepad, JOY_AXIS_LEFT_Y)
+    )
+    return stick.length() >= 0.88
+
 func get_gamepad_name() -> String:
     return _last_gamepad_name
 
