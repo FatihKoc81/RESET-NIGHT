@@ -57,7 +57,14 @@ func spawn_one(kind: String) -> void:
     var session_manager := get_node_or_null("/root/NetworkManager")
     var player_side := str(session_manager.player_side) if is_instance_valid(session_manager) else "defense"
     enemy.faction = "attack" if player_side == "defense" else "defense"
-    get_tree().current_scene.add_child(enemy)
+    var scene_root := get_tree().current_scene
+    if scene_root == null:
+        scene_root = get_parent()
+    if scene_root == null:
+        push_warning("EnemySpawner: düşman için sahne kökü bulunamadı")
+        enemy.queue_free()
+        return
+    scene_root.add_child(enemy)
     enemy.global_position = spawn_position
 
 func _find_spawn_position() -> Vector3:
