@@ -7,13 +7,17 @@ func setup_theme() -> Theme:
     var normal := _style(Color("#1a1d24"), Color("#8b0000"), 2)
     var hover := _style(Color("#2a171b"), Color("#d32f2f"), 2)
     var pressed := _style(Color("#3a0d0d"), Color("#ff3333"), 3)
+    # Disabled buttons keep the same frame and footprint; only the fill/text dim.
+    var disabled := _style(Color("#15171c"), Color("#642027"), 2)
     result.set_stylebox("normal", "Button", normal)
     result.set_stylebox("hover", "Button", hover)
     result.set_stylebox("pressed", "Button", pressed)
     result.set_stylebox("focus", "Button", hover)
+    result.set_stylebox("disabled", "Button", disabled)
     result.set_color("font_color", "Button", Color("#f2eee8"))
     result.set_color("font_hover_color", "Button", Color.WHITE)
     result.set_color("font_pressed_color", "Button", Color.WHITE)
+    result.set_color("font_disabled_color", "Button", Color("#77777d"))
     result.set_font_size("font_size", "Button", 18)
     result.set_stylebox("panel", "PanelContainer", _panel())
     return result
