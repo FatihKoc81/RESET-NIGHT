@@ -287,6 +287,8 @@ func _notification(what: int) -> void:
             get_viewport().set_input_as_handled()
 
 func _process(_delta: float) -> void:
+    if Input.is_action_just_pressed("pause_game"):
+        toggle_pause()
     if Input.is_action_just_pressed("toggle_inventory") and is_instance_valid(inventory_panel):
         _toggle_inventory()
     if is_instance_valid(inventory_panel) and inventory_panel.visible:
@@ -299,10 +301,6 @@ func _process(_delta: float) -> void:
             _last_ammo_text = ammo_text
             ammo_label.text = ammo_text
 
-
-func _process(_delta: float) -> void:
-    if Input.is_action_just_pressed("pause_game"):
-        toggle_pause()
 
 func toggle_inventory() -> void:
     _toggle_inventory()
