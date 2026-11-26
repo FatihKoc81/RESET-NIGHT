@@ -18,7 +18,7 @@ func _ready() -> void:
     Input.joy_connection_changed.connect(_on_joy_connection_changed)
     _refresh_gamepad()
 
-func _process(_delta: float) -> void:
+func _process(delta: float) -> void:
     if _active_gamepad < 0:
         return
     var look := Vector2(
@@ -28,8 +28,10 @@ func _process(_delta: float) -> void:
     if look.length() > 0.16:
         _find_camera()
         if is_instance_valid(_player) and is_instance_valid(_camera_pivot):
-            _player.rotation.y -= look.x * touch_sensitivity * 42.0
-            _camera_pivot.rotation.x = clampf(_camera_pivot.rotation.x - look.y * touch_sensitivity * 30.0, deg_to_rad(-55.0), deg_to_rad(35.0))
+            var sensitivity_scale := touch_sensitivity / DEFAULT_SENSITIVITY
+            var turn_speed := 2.8 * sensitivity_scale
+            _player.rotation.y -= look.x * turn_speed * delta
+            _camera_pivot.rotation.x = clampf(_camera_pivot.rotation.x - look.y * turn_speed * 0.72 * delta, deg_to_rad(-55.0), deg_to_rad(35.0))
 
 func _input(event: InputEvent) -> void:
     if not OS.has_feature("mobile"):
