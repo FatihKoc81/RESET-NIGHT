@@ -225,8 +225,35 @@ func _abandoned_house(pos: Vector3) -> void:
     _add_box_mesh(root, Vector3(5.12, 2.0, -1.2), Vector3(0.12, 0.18, 2.0), metal, true)
     _add_box_mesh(root, Vector3(0, 3.35, 0), Vector3(11.4, 0.28, 8.4), concrete, true)
 
+    # Ev içi keşif alanı: mobilya, devrilmiş dolap ve barikatlı pencere.
+    _add_box_mesh(root, Vector3(-2.7, 0.55, -1.7), Vector3(2.8, 0.85, 1.0), car_paint, false)
+    _add_box_mesh(root, Vector3(-2.7, 1.05, -2.0), Vector3(2.8, 0.28, 0.35), concrete, false)
+    _add_box_mesh(root, Vector3(1.8, 0.42, -1.0), Vector3(1.5, 0.12, 0.9), brick, false)
+    for leg_x in [-0.62, 0.62]:
+        for leg_z in [-0.32, 0.32]:
+            _add_box_mesh(root, Vector3(1.8 + leg_x, 0.20, -1.0 + leg_z), Vector3(0.10, 0.42, 0.10), metal, false)
+    _add_box_mesh(root, Vector3(4.35, 0.95, -2.1), Vector3(0.85, 1.9, 0.65), car_paint, false)
+    _add_box_mesh(root, Vector3(4.35, 1.95, -2.1), Vector3(0.95, 0.12, 0.75), metal, false)
+    # Pencere tahtaları ve kırık cam etkisi.
+    for board_i in range(3):
+        var board := MeshInstance3D.new()
+        var board_mesh := BoxMesh.new()
+        board_mesh.size = Vector3(1.8, 0.12, 0.10)
+        board.mesh = board_mesh
+        board.material_override = car_paint
+        board.position = Vector3(-3.5 + board_i * 0.12, 2.0 + board_i * 0.42, -3.66)
+        board.rotation.z = -0.18 if board_i % 2 == 0 else 0.18
+        root.add_child(board)
+    var interior_light := OmniLight3D.new()
+    interior_light.position = Vector3(0.0, 2.7, 0.0)
+    interior_light.light_color = Color(1.0, 0.58, 0.32)
+    interior_light.light_energy = 0.42
+    interior_light.omni_range = 5.5
+    interior_light.shadow_enabled = false
+    root.add_child(interior_light)
+
 func _build_loot_containers() -> void:
-    _spawn_loot(Vector3(-3.5, 0.0, -3.5), "Terk edilmiş sandık")
+    _spawn_loot(Vector3(24.0, 0.0, -18.0), "Ev içi malzeme sandığı")
     _spawn_loot(Vector3(14.0, 0.0, 2.0), "Araç bagajı")
     _spawn_loot(Vector3(-17.0, 0.0, 10.0), "Malzeme dolabı")
 
