@@ -63,8 +63,27 @@ func _validate() -> void:
                 await physics_frame
                 if get_nodes_in_group("enemies").is_empty():
                     failures.append("Main3D: insan düşman üretilemedi")
+
+            # Verify that the first playable build exposes working pause and
+            # inventory panels, not just a scene that happens to instantiate.
+            if is_instance_valid(hud):
+                if not hud.has_method("toggle_pause") or not hud.has_method("toggle_inventory"):
+                    failures.append("Main3D: pause/inventory HUD actions eksik")
+                else:
+                    hud.toggle_inventory()
+                    if not bool(hud.get("inventory_panel").visible):
+                        failures.append("Main3D: envanter paneli açılamadı")
+                    hud.toggle_inventory()
+                    hud.toggle_pause()
+                    await process_frame
+                    if not paused:
+                        failures.append("Main3D: duraklatma çalışmadı")
+                    hud.toggle_pause()
+                    await process_frame
+                    if paused:
+                        failures.append("Main3D: oyuna devam et çalışmadı")
             if failures.is_empty():
-                print("PLAYABLE BOOT OK: player, camera, HUD, director, enemy spawner, human enemy")
+                print("PLAYABLE BOOT OK: player, camera, HUD, director, enemy, inventory, pause/resume")
             game.queue_free()
             await process_frame
 
