@@ -47,8 +47,8 @@ func _distribute_loot(player: Node) -> void:
         var item_id: String = str(keys[i])
         var bounds: Vector2i = loot_table[item_id]
         var amount := randi_range(bounds.x, bounds.y)
-        var overflow := inventory.add_item(item_id, amount)
-        var accepted := amount - overflow
+        var overflow: int = inventory.add_item(item_id, amount)
+        var accepted: int = amount - overflow
         if accepted > 0:
             found.append("%s x%d" % [inventory.ITEMS[item_id].name, accepted])
     if found.is_empty():
