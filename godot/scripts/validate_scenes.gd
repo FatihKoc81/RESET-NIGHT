@@ -30,8 +30,7 @@ func _validate() -> void:
         await process_frame
         print("SCENE OK: ", path)
 
-    # The old validator checked individual pieces but never booted the actual
-    # gameplay scene. Catch missing player/camera/HUD/director wiring here.
+    # Boot the complete playable scene and validate its actual runtime wiring.
     var playable := ResourceLoader.load(PLAYABLE_SCENE) as PackedScene
     if playable == null:
         failures.append("%s: oynanabilir ana sahne yüklenemedi" % PLAYABLE_SCENE)
@@ -48,7 +47,9 @@ func _validate() -> void:
             var player := get_first_node_in_group("player")
             var director := get_first_node_in_group("director")
             var hud := get_first_node_in_group("hud")
-            var camera := game.find_child("Camera3D", true, false) as Camera3D
+            var camera: Camera3D = null
+            if is_instance_valid(player):
+                camera = player.get_node_or_null("CameraPivot/SpringArm3D/Camera3D") as Camera3D
             var spawner := game.get_node_or_null("EnemySpawner")
             if not is_instance_valid(player):
                 failures.append("Main3D: oyuncu grubu bulunamadı")
@@ -57,7 +58,7 @@ func _validate() -> void:
             if not is_instance_valid(hud):
                 failures.append("Main3D: HUD başlatılmadı")
             if not is_instance_valid(camera):
-                failures.append("Main3D: üçüncü şahıs kamerası sahnede yok")
+                failures.append("Main3D: oyuncunun üçüncü şahıs kamerası bulunamadı")
             elif get_root().get_camera_3d() != camera:
                 camera.make_current()
                 await process_frame
@@ -71,14 +72,13 @@ func _validate() -> void:
                 if get_nodes_in_group("enemies").is_empty():
                     failures.append("Main3D: insan düşman üretilemedi")
 
-            # Verify that the first playable build exposes working pause and
-            # inventory panels, not just a scene that happens to instantiate.
             if is_instance_valid(hud):
                 if not hud.has_method("toggle_pause") or not hud.has_method("toggle_inventory"):
                     failures.append("Main3D: pause/inventory HUD actions eksik")
                 else:
                     hud.toggle_inventory()
-                    if not bool(hud.get("inventory_panel").visible):
+                    var inventory_panel := hud.get("inventory_panel") as Control
+                    if not is_instance_valid(inventory_panel) or not inventory_panel.visible:
                         failures.append("Main3D: envanter paneli açılamadı")
                     hud.toggle_inventory()
                     hud.toggle_pause()
@@ -88,7 +88,7 @@ func _validate() -> void:
                     hud.toggle_pause()
                     await process_frame
                     if paused:
-                        failures.append("Main3D: oyuna devam et çalışmadı")
+                        failures.append("Main3D: oyuna devam et çalışmıyor")
             if failures.is_empty():
                 print("PLAYABLE BOOT OK: player, camera, HUD, director, enemy, inventory, pause/resume")
             current_scene = null
