@@ -132,6 +132,9 @@ func _physics_process(delta: float) -> void:
         interact()
     if Input.is_action_just_pressed("use_first_aid"):
         use_first_aid()
+    if Input.is_action_just_pressed("toggle_inventory"):
+        if is_instance_valid(hud) and hud.has_method("toggle_inventory"):
+            hud.toggle_inventory()
 
 func add_ammo(amount: int) -> void:
     shotgun_reserve += amount
