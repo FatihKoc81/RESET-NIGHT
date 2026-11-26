@@ -55,6 +55,13 @@ func _validate() -> void:
                 failures.append("Main3D: oyuncu grubu bulunamadı")
             if not is_instance_valid(director):
                 failures.append("Main3D: GameDirector başlatılmadı")
+            else:
+                if float(director.get("time_left")) <= 0.0:
+                    failures.append("Main3D: ilk bölüm gece sayacı başlamadı")
+                if not director.has_method("_update_objective"):
+                    failures.append("Main3D: ilk bölüm görev sistemi eksik")
+                if get_nodes_in_group("loot_containers").size() != 3:
+                    failures.append("Main3D: ilk bölümde üç malzeme sandığı bulunamadı")
             if not is_instance_valid(hud):
                 failures.append("Main3D: HUD başlatılmadı")
             if not is_instance_valid(camera):
