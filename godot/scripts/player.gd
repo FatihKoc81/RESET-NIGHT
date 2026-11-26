@@ -108,7 +108,8 @@ func _physics_process(delta: float) -> void:
     if input.length() > 0.08:
         velocity.x = direction.x * move_speed
         velocity.z = direction.z * move_speed
-        if not OS.has_feature("mobile"):
+        var gamepad_active := is_instance_valid(mobile_input) and mobile_input.has_gamepad()
+        if not OS.has_feature("mobile") and not gamepad_active:
             rotation.y = lerp_angle(rotation.y, atan2(-direction.x, -direction.z), delta * 8.0)
     else:
         velocity.x = move_toward(velocity.x, 0.0, move_speed * 5.0 * delta)
