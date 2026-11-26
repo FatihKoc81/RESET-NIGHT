@@ -33,6 +33,9 @@ var dead := false
 
 func _ready() -> void:
     add_to_group("player")
+    # Explicitly claim the active viewport camera when the gameplay scene starts.
+    if is_instance_valid(camera):
+        camera.make_current()
     # Ignore the player's own capsule so the third-person camera does not collapse into the body.
     var camera_arm := get_node_or_null("CameraPivot/SpringArm3D") as SpringArm3D
     if is_instance_valid(camera_arm):
