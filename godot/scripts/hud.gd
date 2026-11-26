@@ -11,6 +11,8 @@ var save_button: Button
 var load_button: Button
 var settings_button: Button
 var settings_panel: PanelContainer
+var pause_button: Button
+var pause_panel: Control
 var sensitivity_slider: HSlider
 var broadcast_label: Label
 var _last_inventory_text := ""
@@ -22,6 +24,8 @@ func _ready() -> void:
     var root := Control.new()
     root.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
     root.mouse_filter = Control.MOUSE_FILTER_PASS
+    root.process_mode = Node.PROCESS_MODE_ALWAYS
+    process_mode = Node.PROCESS_MODE_ALWAYS
     var ui_builder = preload("res://scripts/ui_asset_builder.gd").new()
     root.theme = ui_builder.setup_theme()
     add_child(root)
@@ -50,6 +54,7 @@ func _ready() -> void:
     _build_inventory_panel(root)
     _build_save_controls(root)
     _build_settings_controls(root)
+    _build_pause_controls(root)
     root.resized.connect(_layout_hud.bind(root))
     _layout_hud(root)
 
@@ -79,6 +84,9 @@ func _layout_hud(root: Control) -> void:
     if is_instance_valid(settings_button):
         settings_button.position = Vector2(margin, margin + 164)
         settings_button.size = Vector2(104, 42)
+    if is_instance_valid(pause_button):
+        pause_button.position = Vector2(view.x - margin - 112, margin)
+        pause_button.size = Vector2(112, 42)
     if is_instance_valid(inventory_button):
         inventory_button.position = Vector2(margin + 112, margin + 164)
         inventory_button.size = Vector2(120, 42)
@@ -290,3 +298,75 @@ func _process(_delta: float) -> void:
         if ammo_text != _last_ammo_text:
             _last_ammo_text = ammo_text
             ammo_label.text = ammo_text
+
+
+func _process(_delta: float) -> void:
+    if Input.is_action_just_pressed("pause_game"):
+        toggle_pause()
+
+func toggle_inventory() -> void:
+    _toggle_inventory()
+
+func _build_pause_controls(root: Control) -> void:
+    pause_button = Button.new()
+    pause_button.text = "DURAKLAT"
+    pause_button.pressed.connect(toggle_pause)
+    root.add_child(pause_button)
+
+    pause_panel = Control.new()
+    pause_panel.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+    pause_panel.mouse_filter = Control.MOUSE_FILTER_STOP
+    pause_panel.process_mode = Node.PROCESS_MODE_ALWAYS
+    pause_panel.visible = false
+    root.add_child(pause_panel)
+
+    var shade := ColorRect.new()
+    shade.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+    shade.color = Color(0.0, 0.0, 0.0, 0.78)
+    shade.mouse_filter = Control.MOUSE_FILTER_STOP
+    pause_panel.add_child(shade)
+
+    var center := CenterContainer.new()
+    center.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+    pause_panel.add_child(center)
+
+    var panel := PanelContainer.new()
+    panel.custom_minimum_size = Vector2(300, 0)
+    center.add_child(panel)
+
+    var column := VBoxContainer.new()
+    column.add_theme_constant_override("separation", 12)
+    panel.add_child(column)
+
+    var heading := Label.new()
+    heading.text = "OYUN DURAKLATILDI"
+    heading.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+    heading.add_theme_font_size_override("font_size", 22)
+    column.add_child(heading)
+
+    var resume := Button.new()
+    resume.text = "OYUNA DEVAM ET"
+    resume.custom_minimum_size.y = 54
+    resume.pressed.connect(toggle_pause)
+    column.add_child(resume)
+
+    var menu := Button.new()
+    menu.text = "ANA MENÜ"
+    menu.custom_minimum_size.y = 54
+    menu.pressed.connect(_return_to_menu)
+    column.add_child(menu)
+
+func toggle_pause() -> void:
+    if not is_instance_valid(pause_panel):
+        return
+    var opening := not pause_panel.visible
+    pause_panel.visible = opening
+    get_tree().paused = opening
+    if opening:
+        pause_panel.move_to_front()
+    else:
+        Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+
+func _return_to_menu() -> void:
+    get_tree().paused = false
+    get_tree().change_scene_to_file("res://scenes/ui/MainMenu3D.tscn")
