@@ -67,10 +67,50 @@ func _validate() -> void:
             if not is_instance_valid(spawner):
                 failures.append("Main3D: EnemySpawner eksik")
             elif is_instance_valid(player):
-                spawner.spawn_one("walker")
-                await physics_frame
-                if get_nodes_in_group("enemies").is_empty():
-                    failures.append("Main3D: insan düşman üretilemedi")
+                var faction_manager := root.get_node_or_null("NetworkManager")
+                if not is_instance_valid(faction_manager):
+                    failures.append("Main3D: fraksiyon yöneticisi bulunamadı")
+                else:
+                    # SAVUNMA oyuncusuna SALDIRI tarafında insan düşman üretilmeli.
+                    faction_manager.player_side = "defense"
+                    spawner.spawn_one("walker")
+                    await physics_frame
+                    var spawned := get_nodes_in_group("enemies")
+                    if spawned.is_empty():
+                        failures.append("Main3D: SAVUNMA akışında insan düşman üretilemedi")
+                    else:
+                        var first_enemy: Node = spawned[0]
+                        if str(first_enemy.get("faction")) != "attack":
+                            failures.append("Main3D: SAVUNMA oyuncusunun karşısında SALDIRI fraksiyonu üretilmedi")
+                        if not first_enemy.is_in_group("human_raiders"):
+                            failures.append("Main3D: üretilen düşman insan NPC grubunda değil")
+                        var human_visual := first_enemy.get_node_or_null("Visual")
+                        if not is_instance_valid(human_visual):
+                            failures.append("Main3D: insan düşmanın 3D görseli eksik")
+                        else:
+                            var visual_script := human_visual.get_script() as Script
+                            if visual_script == null or visual_script.resource_path != "res://scripts/character_art.gd":
+                                failures.append("Main3D: düşman görseli doğrulanmış insan karakter betiğini kullanmıyor")
+                    for enemy in get_nodes_in_group("enemies"):
+                        enemy.queue_free()
+                    await physics_frame
+
+                    # SALDIRI oyuncusuna SAVUNMA tarafında insan düşman üretilmeli.
+                    faction_manager.player_side = "attack"
+                    spawner.spawn_one("walker")
+                    await physics_frame
+                    spawned = get_nodes_in_group("enemies")
+                    if spawned.is_empty():
+                        failures.append("Main3D: SALDIRI akışında insan düşman üretilemedi")
+                    else:
+                        var second_enemy: Node = spawned[0]
+                        if str(second_enemy.get("faction")) != "defense":
+                            failures.append("Main3D: SALDIRI oyuncusunun karşısında SAVUNMA fraksiyonu üretilmedi")
+                        if not second_enemy.is_in_group("human_raiders"):
+                            failures.append("Main3D: SALDIRI akışındaki karşı karakter insan NPC değil")
+                    for enemy in get_nodes_in_group("enemies"):
+                        enemy.queue_free()
+                    await physics_frame
 
             if is_instance_valid(hud):
                 if not hud.has_method("toggle_pause") or not hud.has_method("toggle_inventory"):
