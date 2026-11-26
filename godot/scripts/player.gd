@@ -105,12 +105,24 @@ func _physics_process(delta: float) -> void:
             _notify("Pompalı dolduruldu")
     var input := Input.get_vector("move_left", "move_right", "move_forward", "move_back")
     var mobile_input := get_node_or_null("/root/MobileInputManager")
-    if OS.has_feature("mobile") and is_instance_valid(mobile_input) and mobile_input.move_vector.length() > 0.01:
-        input = mobile_input.move_vector
+    var touch_magnitude := 0.0
+    if OS.has_feature("mobile") and is_instance_valid(mobile_input):
+        touch_magnitude = mobile_input.move_vector.length()
+        if touch_magnitude > 0.01:
+            input = mobile_input.move_vector
+    # Telefonlarda joystick'i dış halkaya kadar itmek koşuyu başlatır.
+    # Klavye ve gamepad tarafında Shift aynı işi görür.
+    var wants_sprint := Input.is_key_pressed(KEY_SHIFT) or (OS.has_feature("mobile") and touch_magnitude >= 0.88)
+    var sprinting := wants_sprint and input.length() > 0.08 and stamina > 1.0
+    if sprinting:
+        stamina = maxf(0.0, stamina - 30.0 * delta)
+    else:
+        stamina = minf(100.0, stamina + 19.0 * delta)
+    var current_speed := move_speed * (1.55 if sprinting else 1.0)
     var direction := (global_transform.basis * Vector3(input.x, 0, input.y)).normalized()
     if input.length() > 0.08:
-        velocity.x = direction.x * move_speed
-        velocity.z = direction.z * move_speed
+        velocity.x = direction.x * current_speed
+        velocity.z = direction.z * current_speed
         var gamepad_active: bool = is_instance_valid(mobile_input) and mobile_input.has_gamepad()
         if not OS.has_feature("mobile") and not gamepad_active:
             rotation.y = lerp_angle(rotation.y, atan2(-direction.x, -direction.z), delta * 8.0)
