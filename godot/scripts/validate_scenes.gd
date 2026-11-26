@@ -41,6 +41,7 @@ func _validate() -> void:
             failures.append("%s: ana sahne instantiate edilemedi" % PLAYABLE_SCENE)
         else:
             root.add_child(game)
+            current_scene = game
             await process_frame
             await process_frame
             var player := get_first_node_in_group("player")
@@ -54,7 +55,7 @@ func _validate() -> void:
                 failures.append("Main3D: GameDirector başlatılmadı")
             if not is_instance_valid(hud):
                 failures.append("Main3D: HUD başlatılmadı")
-            if not is_instance_valid(camera) or not camera.current:
+            if not is_instance_valid(camera) or not camera.is_current():
                 failures.append("Main3D: aktif üçüncü şahıs kamerası yok")
             if not is_instance_valid(spawner):
                 failures.append("Main3D: EnemySpawner eksik")
@@ -84,6 +85,7 @@ func _validate() -> void:
                         failures.append("Main3D: oyuna devam et çalışmadı")
             if failures.is_empty():
                 print("PLAYABLE BOOT OK: player, camera, HUD, director, enemy, inventory, pause/resume")
+            current_scene = null
             game.queue_free()
             await process_frame
 
