@@ -2,6 +2,8 @@ extends Node
 ## RESET NIGHT oyun yöneticisi: gece sayacı, dalgalar, skor, ölüm ve şafak (zafer) ekranı.
 
 const NIGHT_LENGTH := 420.0
+const SUPPLY_CACHE_GOAL := 3
+const SUPPLY_CACHE_REWARD := 750
 const SAVE_PATH := "user://save_game.dat"
 const RECORD_PATH := "user://records.cfg"
 const MENU_SCENE := "res://scenes/ui/MainMenu3D.tscn"
@@ -16,12 +18,15 @@ var time_left := NIGHT_LENGTH
 var finished := false
 var kills := 0
 var score := 0
+var caches_found := 0
+var _objective_refresh := 0.0
 var _wave_index := 0
 var _flash_alpha := 0.0
 var _phase_timer := 0.0
 var _layer: CanvasLayer
 var _timer_label: Label
 var _stats_label: Label
+var _objective_label: Label
 var _phase_label: Label
 var _flash: ColorRect
 var _end_root: Control
@@ -35,7 +40,8 @@ func _ready() -> void:
     var world := get_tree().root.find_child("WorldEnvironment", true, false)
     if world is WorldEnvironment:
         _fog_env = (world as WorldEnvironment).environment
-    _show_phase("ARINMA BAŞLADI — ŞAFAĞA KADAR HAYATTA KAL", 4.5)
+    _show_phase("ARINMA BAŞLADI — MAHALLEYİ SAVUN, ŞAFAĞI GÖR", 4.5)
+    _update_objective()
 
 func get_intensity() -> float:
     return clampf(1.0 - time_left / NIGHT_LENGTH, 0.0, 1.0)
@@ -54,6 +60,10 @@ func _process(delta: float) -> void:
     if finished:
         return
     time_left = maxf(0.0, time_left - delta)
+    _objective_refresh -= delta
+    if _objective_refresh <= 0.0:
+        _objective_refresh = 0.35
+        _update_objective()
     var secs := int(ceil(time_left))
     _timer_label.text = "ŞAFAĞA  %02d:%02d" % [floori(secs / 60.0), secs % 60]
     _stats_label.text = "ÖLDÜRÜLEN %d     SKOR %d" % [kills, score]
@@ -82,6 +92,19 @@ func _spawn_wave(count: int) -> void:
     if spawner != null and spawner.has_method("spawn_wave"):
         spawner.spawn_wave(count)
 
+func _update_objective() -> void:
+    var found := 0
+    var total := 0
+    for container in get_tree().get_nodes_in_group("loot_containers"):
+        if not is_instance_valid(container):
+            continue
+        total += 1
+        if bool(container.get("searched")):
+            found += 1
+    caches_found = found
+    if is_instance_valid(_objective_label):
+        _objective_label.text = "GÖREV: HAYATTA KAL  •  MALZEME SANDIKLARI %d/%d" % [found, mini(SUPPLY_CACHE_GOAL, total)]
+
 func _show_phase(text: String, seconds: float) -> void:
     if _phase_label == null:
         return
@@ -95,7 +118,8 @@ func _end(won: bool) -> void:
     finished = true
     Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
     var survived := int(NIGHT_LENGTH - time_left)
-    var final_score := score + (1500 if won else 0)
+    var cache_bonus := SUPPLY_CACHE_REWARD if won and caches_found >= SUPPLY_CACHE_GOAL else 0
+    var final_score := score + (1500 if won else 0) + cache_bonus
     var best := _save_record(final_score)
     _end_title.text = "ŞAFAK DOĞDU — HAYATTA KALDIN" if won else "ARINMA SENİ ALDI"
     _end_title.add_theme_color_override("font_color", Color("#7fd18b") if won else Color("#ff5b55"))
@@ -170,6 +194,13 @@ func _build_ui() -> void:
     _stats_label.offset_top = 98.0
     _stats_label.offset_bottom = 124.0
 
+    _objective_label = _make_label(root, 14, Color("#e8dccf"))
+    _objective_label.anchor_left = 0.5
+    _objective_label.anchor_right = 0.5
+    _objective_label.offset_left = -230.0
+    _objective_label.offset_right = 230.0
+    _objective_label.offset_top = 126.0
+    _objective_label.offset_bottom = 151.0
     _phase_label = _make_label(root, 30, Color("#ff5b55"))
     _phase_label.anchor_left = 0.0
     _phase_label.anchor_right = 1.0
