@@ -1,0 +1,51 @@
+name: APEX Emri
+# Claude Code (veya sahibi) RESET NIGHT işlerini APEX'e bu iş akışıyla verir.
+# Gerekli secret: APEX_DEVICE_TOKEN (APEX /auth/enroll ile alınan cihaz anahtarı).
+on:
+  workflow_dispatch:
+    inputs:
+      order:
+        description: "APEX'e verilecek görev (RESET-NIGHT için)"
+        required: true
+        type: string
+      wait_minutes:
+        description: "Sonucu bekleme süresi (dakika)"
+        required: false
+        default: "40"
+        type: string
+permissions:
+  contents: read
+jobs:
+  order:
+    runs-on: ubuntu-latest
+    timeout-minutes: 50
+    env:
+      APEX_URL: https://apex-oknl.onrender.com
+      TOKEN: ${{ secrets.APEX_DEVICE_TOKEN }}
+      ORDER: ${{ inputs.order }}
+      WAIT: ${{ inputs.wait_minutes }}
+    steps:
+      - name: Görevi APEX'e gönder ve izle
+        shell: bash
+        run: |
+          set -euo pipefail
+          [ -n "$TOKEN" ] || { echo "::error::APEX_DEVICE_TOKEN secret eksik"; exit 1; }
+          curl -s -m 90 -o /dev/null "$APEX_URL/health" || true   # Render uyandır
+          BODY=$(jq -n --arg o "FatihKoc81/RESET-NIGHT reposu için (mevcut proje: apex/<görev> dalı + PR). Görsel yön: docs/art-direction/. $ORDER" '{instruction:$o}')
+          ID=$(curl -sf -m 60 "$APEX_URL/tasks" -H "authorization: Bearer $TOKEN" -H 'content-type: application/json' -d "$BODY" | jq -r .id)
+          echo "Görev: $ID"
+          END=$(( $(date +%s) + ${WAIT:-40}*60 ))
+          while [ "$(date +%s)" -lt "$END" ]; do
+            sleep 30
+            T=$(curl -s -m 30 "$APEX_URL/tasks/$ID" -H "authorization: Bearer $TOKEN" || echo '{}')
+            S=$(echo "$T" | jq -r '.status // "?"')
+            echo "durum: $S"
+            case "$S" in completed|failed|blocked|cancelled) break;; esac
+          done
+          {
+            echo "## APEX görevi \`$ID\` — $S"
+            echo "$T" | jq -r '"PR: " + ((.pullRequests // []) | map(.url // .html_url // tostring) | join(", "))' || true
+            echo '```'
+            echo "$T" | jq -r '(.result // .error // .output // .) | tostring' | tail -c 6000
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
