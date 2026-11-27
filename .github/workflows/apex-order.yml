@@ -6,7 +6,12 @@ on:
     inputs:
       order:
         description: "APEX'e verilecek görev (RESET-NIGHT için)"
-        required: true
+        required: false
+        type: string
+      task_id:
+        description: "Varsa mevcut APEX görevinin id'si (yeni görev açılmaz, sadece durum okunur)"
+        required: false
+        default: ""
         type: string
       wait_minutes:
         description: "Sonucu bekleme süresi (dakika)"
@@ -24,6 +29,7 @@ jobs:
       TOKEN: ${{ secrets.APEX_DEVICE_TOKEN }}
       ORDER: ${{ inputs.order }}
       WAIT: ${{ inputs.wait_minutes }}
+      TASK_ID: ${{ inputs.task_id }}
     steps:
       - name: Görevi APEX'e gönder ve izle
         shell: bash
@@ -32,7 +38,8 @@ jobs:
           [ -n "$TOKEN" ] || { echo "::error::APEX_DEVICE_TOKEN secret eksik"; exit 1; }
           curl -s -m 90 -o /dev/null "$APEX_URL/health" || true   # Render uyandır
           BODY=$(jq -n --arg o "FatihKoc81/RESET-NIGHT reposu için (mevcut proje: apex/<görev> dalı + PR). Görsel yön: docs/art-direction/. $ORDER" '{instruction:$o}')
-          ID=$(curl -sf -m 60 "$APEX_URL/tasks" -H "authorization: Bearer $TOKEN" -H 'content-type: application/json' -d "$BODY" | jq -r .id)
+          ID="$TASK_ID"
+          [ -n "$ID" ] || ID=$(curl -sf -m 60 "$APEX_URL/tasks" -H "authorization: Bearer $TOKEN" -H 'content-type: application/json' -d "$BODY" | jq -r .id)
           echo "Görev: $ID"
           END=$(( $(date +%s) + ${WAIT:-40}*60 ))
           while [ "$(date +%s)" -lt "$END" ]; do
@@ -42,6 +49,7 @@ jobs:
             echo "durum: $S"
             case "$S" in completed|failed|blocked|cancelled) break;; esac
           done
+          echo "$T" | jq '{status,error,result,pullRequests,events:((.events//[])[-12:])}' || echo "$T" | tail -c 4000
           {
             echo "## APEX görevi \`$ID\` — $S"
             echo "$T" | jq -r '"PR: " + ((.pullRequests // []) | map(.url // .html_url // tostring) | join(", "))' || true
