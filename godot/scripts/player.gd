@@ -112,9 +112,9 @@ func _physics_process(delta: float) -> void:
             input = mobile_input.move_vector
     # Telefonlarda joystick'i dış halkaya kadar itmek koşuyu başlatır.
     # Klavye ve gamepad tarafında Shift aynı işi görür.
-    var gamepad_sprint := is_instance_valid(mobile_input) and mobile_input.has_method("is_sprint_requested") and mobile_input.is_sprint_requested()
-    var wants_sprint := Input.is_key_pressed(KEY_SHIFT) or (OS.has_feature("mobile") and touch_magnitude >= 0.88) or gamepad_sprint
-    var sprinting := wants_sprint and input.length() > 0.08 and stamina > 1.0
+    var gamepad_sprint: bool = is_instance_valid(mobile_input) and mobile_input.has_method("is_sprint_requested") and mobile_input.is_sprint_requested()
+    var wants_sprint: bool = Input.is_key_pressed(KEY_SHIFT) or (OS.has_feature("mobile") and touch_magnitude >= 0.88) or gamepad_sprint
+    var sprinting: bool = wants_sprint and input.length() > 0.08 and stamina > 1.0
     if sprinting:
         stamina = maxf(0.0, stamina - 30.0 * delta)
     else:
