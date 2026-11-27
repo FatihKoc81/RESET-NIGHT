@@ -198,6 +198,40 @@ func _burning_barrel(pos: Vector3) -> void:
     light.omni_range = 7.0
     light.shadow_enabled = false
     root.add_child(light)
+    root.add_child(_spark_emitter())
+
+
+## Cheap ember/spark plume for fires (CPU particles work on the Compatibility renderer).
+func _spark_emitter() -> CPUParticles3D:
+    var sparks := CPUParticles3D.new()
+    sparks.position = Vector3(0, 1.35, 0)
+    sparks.amount = 14
+    sparks.lifetime = 1.6
+    sparks.randomness = 0.6
+    sparks.direction = Vector3.UP
+    sparks.spread = 22.0
+    sparks.initial_velocity_min = 0.8
+    sparks.initial_velocity_max = 2.2
+    sparks.gravity = Vector3(0.15, 0.35, 0)
+    sparks.scale_amount_min = 0.5
+    sparks.scale_amount_max = 1.0
+    var quad := QuadMesh.new()
+    quad.size = Vector2(0.05, 0.05)
+    var mat := StandardMaterial3D.new()
+    mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+    mat.billboard_mode = BaseMaterial3D.BILLBOARD_PARTICLES
+    mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+    mat.blend_mode = BaseMaterial3D.BLEND_MODE_ADD
+    mat.vertex_color_use_as_albedo = true
+    mat.albedo_color = Color(1.0, 0.55, 0.18)
+    quad.material = mat
+    sparks.mesh = quad
+    var fade := Gradient.new()
+    fade.set_color(0, Color(1.0, 0.75, 0.3, 1.0))
+    fade.set_color(1, Color(1.0, 0.2, 0.05, 0.0))
+    sparks.color_ramp = fade
+    sparks.visibility_range_end = 40.0
+    return sparks
 
 func _fence(pos: Vector3, length: float) -> void:
     var root := Node3D.new()
